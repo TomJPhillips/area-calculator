@@ -14,7 +14,7 @@
       color: #333;
     }
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 30px auto;
       padding: 20px;
       background: #fff;
@@ -82,10 +82,11 @@
     }
     th, td {
       border: 1px solid #ddd;
-      padding: 10px;
+      padding: 8px;
       text-align: center;
+      vertical-align: middle;
     }
-    th { background: #f0f0f0; }
+    th { background: #f0f0f0; font-size: 0.9em; }
     canvas {
       display: block;
       margin: 0 auto;
@@ -107,6 +108,40 @@
     .error { border-color: #e74c3c !important; background-color: #fdf2f2 !important; }
     .warning { border-color: #f39c12 !important; background-color: #fef9e7 !important; }
 
+    /* Field group styles for compact inputs */
+    .field-group {
+      display: flex;
+      gap: 4px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .field-group input {
+      width: 55px;
+      padding: 6px 4px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .field-group input.deg-field { width: 60px; }
+    .field-group input.min-field,
+    .field-group input.sec-field { width: 50px; }
+    .field-group input.grads-field { width: 70px; }
+    .field-group input.length-field { width: 80px; }
+    .field-group input.radius-field { width: 70px; }
+    .field-group select {
+      padding: 6px 4px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .field-group .field-label {
+      font-size: 0.75em;
+      color: #7f8c8d;
+      margin-left: -2px;
+    }
+
     /* Help tooltips */
     .help-icon {
       display: inline-block;
@@ -124,7 +159,6 @@
     }
     .help-icon:hover { background: #2980b9; }
 
-    /* Tooltip container */
     .tooltip {
       position: relative;
       display: inline-block;
@@ -162,7 +196,6 @@
       opacity: 1;
     }
 
-    /* Error message box */
     .error-box {
       background: #fdf2f2;
       border: 1px solid #e74c3c;
@@ -183,15 +216,41 @@
       margin: 10px 0;
       color: #9a7b0a;
     }
-
-    /* Format hints */
-    .format-hint {
-      font-size: 0.8em;
-      color: #7f8c8d;
-      margin-top: 5px;
+    .info-box {
+      background: #e8f4f8;
+      border: 1px solid #3498db;
+      border-radius: 4px;
+      padding: 10px 15px;
+      margin: 10px 0;
+      color: #2980b9;
+      font-size: 0.9em;
     }
 
-    /* Report Styles (visible on screen and print) */
+    .format-hint {
+      font-size: 0.75em;
+      color: #7f8c8d;
+      margin-top: 3px;
+    }
+
+    /* Starting bearing row */
+    .starting-bearing-row {
+      background: #e8f4f8;
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .starting-bearing-row.visible {
+      display: flex;
+    }
+    .starting-bearing-row label {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* Report Styles */
     .print-report-header {
       text-align: center;
       border-bottom: 3px solid #2c3e50;
@@ -294,339 +353,39 @@
       display: flex;
       justify-content: space-between;
     }
-    @media (max-width: 600px) {
-      .print-two-column {
-        flex-direction: column;
-        gap: 0;
-      }
-      .print-summary-grid {
-        grid-template-columns: 1fr;
-      }
+
+    @media (max-width: 900px) {
+      .field-group { flex-wrap: wrap; }
+      .print-two-column { flex-direction: column; gap: 0; }
+      .print-summary-grid { grid-template-columns: 1fr; }
     }
 
-    /* Starting bearing row */
-    .starting-bearing-row {
-      background: #e8f4f8;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin-bottom: 15px;
-      display: none;
-    }
-    .starting-bearing-row.visible {
-      display: block;
-    }
-    .starting-bearing-row label {
-      font-weight: 500;
-    }
-    .starting-bearing-row input {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1em;
-      width: 150px;
-    }
-
-    /* Print Styles for Professional A4 Output */
+    /* Print Styles */
     @media print {
-      @page {
-        size: A4;
-        margin: 15mm 15mm 20mm 15mm;
-      }
-
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
-      body {
-        margin: 0;
-        padding: 0;
-        background: #fff !important;
-        font-size: 10pt;
-        line-height: 1.4;
-        color: #000;
-      }
-
-      .container {
-        width: 100%;
-        max-width: none;
-        margin: 0;
-        padding: 0;
-        box-shadow: none;
-        background: #fff;
-      }
-
-      /* Hide non-print elements */
-      header, .controls, .segments, .diagram, .beta-note {
-        display: none !important;
-      }
-
-      .results {
-        border: none;
-        margin: 0;
-        padding: 0;
-        background: #fff;
-      }
-
-      .report textarea,
-      .report button,
-      .report h3:first-of-type {
-        display: none !important;
-      }
-
-      /* Print Report Wrapper */
-      #resultsDisplay {
-        font-family: 'Roboto', Arial, sans-serif;
-      }
-
-      /* Report Header */
-      .print-report-header {
-        border-bottom: 3px solid #2c3e50;
-        padding-bottom: 15pt;
-        margin-bottom: 15pt;
-        page-break-after: avoid;
-      }
-
-      .print-report-header h1 {
-        font-size: 22pt;
-        color: #2c3e50;
-        margin: 0 0 5pt 0;
-        font-weight: 700;
-        letter-spacing: -0.5pt;
-      }
-
-      .print-report-header h2 {
-        font-size: 12pt;
-        color: #7f8c8d;
-        margin: 0;
-        font-weight: 400;
-      }
-
-      .print-meta {
-        font-size: 9pt;
-        color: #7f8c8d;
-        text-align: right;
-        margin-bottom: 10pt;
-      }
-
-      .print-description {
-        background: #f8f9fa !important;
-        border-left: 4px solid #3498db !important;
-        padding: 10pt 12pt;
-        margin: 12pt 0;
-        font-style: italic;
-        font-size: 10pt;
-        page-break-inside: avoid;
-      }
-
-      /* Section Headers */
-      .results h3,
-      #resultsDisplay h3 {
-        font-size: 12pt;
-        color: #2c3e50;
-        border-bottom: 1.5pt solid #bdc3c7;
-        padding-bottom: 4pt;
-        margin: 18pt 0 10pt 0;
-        font-weight: 600;
-        page-break-after: avoid;
-      }
-
-      /* Diagram Section */
-      .print-diagram-section {
-        text-align: center;
-        margin: 15pt 0;
-        page-break-inside: avoid;
-      }
-
-      .print-diagram-section img {
-        max-width: 75%;
-        max-height: 280pt;
-        border: 1pt solid #ddd;
-        border-radius: 4pt;
-        margin: 0 auto;
-        display: block;
-      }
-
-      .print-diagram-caption {
-        font-size: 9pt;
-        color: #7f8c8d;
-        margin-top: 6pt;
-        font-style: italic;
-      }
-
-      /* Two Column Layout for Area/Perimeter */
-      .print-two-column {
-        display: flex;
-        gap: 20pt;
-        page-break-inside: avoid;
-      }
-
-      .print-column {
-        flex: 1;
-      }
-
-      /* Lists */
-      #resultsDisplay ul {
-        margin: 8pt 0;
-        padding-left: 0;
-        list-style: none;
-      }
-
-      #resultsDisplay ul li {
-        padding: 3pt 0;
-        font-size: 10pt;
-        border-bottom: 0.5pt dotted #ddd;
-      }
-
-      #resultsDisplay ul li:last-child {
-        border-bottom: none;
-      }
-
-      #resultsDisplay ul li strong {
-        color: #2c3e50;
-      }
-
-      /* Tables */
-      #resultsDisplay table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 10pt 0;
-        font-size: 9pt;
-        page-break-inside: avoid;
-      }
-
-      #resultsDisplay table thead {
-        background: #2c3e50 !important;
-      }
-
-      #resultsDisplay table th {
-        background: #2c3e50 !important;
-        color: #fff !important;
-        padding: 8pt 6pt;
-        font-weight: 600;
-        text-align: center;
-        border: 1pt solid #2c3e50;
-      }
-
-      #resultsDisplay table td {
-        padding: 6pt;
-        text-align: center;
-        border: 0.5pt solid #ddd;
-      }
-
-      #resultsDisplay table tbody tr:nth-child(even) {
-        background: #f8f9fa !important;
-      }
-
-      #resultsDisplay table tbody tr:hover {
-        background: none;
-      }
-
-      /* Closure Status Boxes */
-      .warning-box {
-        background: #fef9e7 !important;
-        border: 1.5pt solid #f39c12 !important;
-        border-radius: 4pt;
-        padding: 10pt 12pt;
-        margin: 10pt 0;
-        page-break-inside: avoid;
-      }
-
-      .print-closed-status {
-        background: #eafaf1 !important;
-        border: 1.5pt solid #27ae60 !important;
-        border-radius: 4pt;
-        padding: 10pt 12pt;
-        margin: 10pt 0;
-        color: #1e7e34;
-        page-break-inside: avoid;
-      }
-
-      /* Footer */
-      .print-footer {
-        margin-top: 20pt;
-        padding-top: 10pt;
-        border-top: 1pt solid #bdc3c7;
-        font-size: 8pt;
-        color: #7f8c8d;
-        text-align: center;
-        page-break-inside: avoid;
-      }
-
-      .print-footer-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      /* Page Break Controls */
-      .page-break-before {
-        page-break-before: always;
-      }
-
-      .page-break-after {
-        page-break-after: always;
-      }
-
-      .no-break {
-        page-break-inside: avoid;
-      }
-
-      /* Ensure proper orphan/widow control */
-      p, li {
-        orphans: 3;
-        widows: 3;
-      }
-
-      h3 {
-        page-break-after: avoid;
-      }
-
-      /* Summary Box */
-      .print-summary-box {
-        background: #f8f9fa !important;
-        border: 1pt solid #ddd;
-        border-radius: 4pt;
-        padding: 12pt;
-        margin: 12pt 0;
-        page-break-inside: avoid;
-      }
-
-      .print-summary-box h4 {
-        margin: 0 0 8pt 0;
-        font-size: 11pt;
-        color: #2c3e50;
-      }
-
-      .print-summary-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8pt;
-      }
-
-      .print-summary-item {
-        display: flex;
-        justify-content: space-between;
-        padding: 4pt 0;
-        border-bottom: 0.5pt dotted #ddd;
-      }
-
-      .print-summary-label {
-        color: #7f8c8d;
-        font-size: 9pt;
-      }
-
-      .print-summary-value {
-        font-weight: 600;
-        color: #2c3e50;
-        font-size: 10pt;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .controls, .segments, .diagram, .results { padding: 10px; }
-      h1 { font-size: 2em; }
-      .tooltip .tooltip-text { width: 200px; margin-left: -100px; }
+      @page { size: A4; margin: 15mm; }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+      body { margin: 0; padding: 0; background: #fff !important; font-size: 10pt; }
+      .container { width: 100%; max-width: none; margin: 0; padding: 0; box-shadow: none; }
+      header, .controls, .segments, .diagram, .beta-note { display: none !important; }
+      .results { border: none; margin: 0; padding: 0; background: #fff; }
+      .report textarea, .report button, .report h3:first-of-type { display: none !important; }
+      .print-report-header { border-bottom: 3px solid #2c3e50; padding-bottom: 15pt; margin-bottom: 15pt; }
+      .print-report-header h1 { font-size: 22pt; color: #2c3e50; margin: 0 0 5pt 0; }
+      .print-report-header h2 { font-size: 12pt; color: #7f8c8d; margin: 0; }
+      .print-meta { font-size: 9pt; color: #7f8c8d; text-align: right; margin-bottom: 10pt; }
+      #resultsDisplay h3 { font-size: 12pt; color: #2c3e50; border-bottom: 1.5pt solid #bdc3c7; padding-bottom: 4pt; margin: 18pt 0 10pt 0; page-break-after: avoid; }
+      .print-diagram-section { text-align: center; margin: 15pt 0; page-break-inside: avoid; }
+      .print-diagram-section img { max-width: 75%; max-height: 280pt; border: 1pt solid #ddd; }
+      #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 10pt 0; font-size: 9pt; page-break-inside: avoid; }
+      #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 8pt 6pt; border: 1pt solid #2c3e50; }
+      #resultsDisplay table td { padding: 6pt; border: 0.5pt solid #ddd; }
+      #resultsDisplay table tbody tr:nth-child(even) { background: #f8f9fa !important; }
+      .warning-box { background: #fef9e7 !important; border: 1.5pt solid #f39c12 !important; page-break-inside: avoid; }
+      .print-closed-status { background: #eafaf1 !important; border: 1.5pt solid #27ae60 !important; page-break-inside: avoid; }
+      .print-footer { margin-top: 20pt; padding-top: 10pt; border-top: 1pt solid #bdc3c7; font-size: 8pt; }
+      .no-break { page-break-inside: avoid; }
+      h3 { page-break-after: avoid; }
+      .print-summary-box { background: #f8f9fa !important; border: 1pt solid #ddd; page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -646,61 +405,29 @@
         <option value="FeetInches">Feet and Inches</option>
         <option value="Links">Links</option>
       </select>
-      <span class="tooltip">
-        <span class="help-icon">?</span>
-        <span class="tooltip-text">
-          <strong>Metres:</strong> Enter as decimal (e.g., 10.5)<br>
-          <strong>Decimal Feet:</strong> Enter as decimal (e.g., 32.8)<br>
-          <strong>Feet and Inches:</strong> Enter as 10' 6" or 10' 6.5"<br>
-          <strong>Links:</strong> 1 link = 0.201168m (Gunter's chain)
-        </span>
-      </span>
 
       <label for="bearingType" style="margin-left: 15px;">Bearing Type:</label>
       <select id="bearingType">
-        <option value="WholeCircle" selected>Whole Circle Bearings</option>
+        <option value="WholeCircle" selected>Whole Circle (D/M/S)</option>
         <option value="DecimalDegrees">Decimal Degrees</option>
         <option value="Quadrant">Quadrant Bearings</option>
         <option value="Internal">Internal Angles</option>
         <option value="Deflection">Deflection Angles</option>
         <option value="Grads">Grads</option>
       </select>
-      <span class="tooltip">
-        <span class="help-icon">?</span>
-        <span class="tooltip-text">
-          <strong>Whole Circle:</strong> 0-360° clockwise from North<br>
-          <strong>Decimal Degrees:</strong> Same as Whole Circle<br>
-          <strong>Quadrant:</strong> N45°E, S30°W format<br>
-          <strong>Internal:</strong> Interior angles of polygon (needs starting bearing)<br>
-          <strong>Deflection:</strong> Turn angle from previous line (+ve=right, -ve=left)<br>
-          <strong>Grads:</strong> 0-400 grads (100 grads = 90°)
-        </span>
-      </span>
 
-      <br><br>
-
-      <label for="angleInputMode">Angle Input Mode:</label>
+      <label for="angleInputMode" style="margin-left: 15px;">Mode:</label>
       <select id="angleInputMode">
         <option value="Absolute" selected>Absolute</option>
-        <option value="Relative">Relative (cumulative)</option>
+        <option value="Relative">Relative</option>
       </select>
-      <span class="tooltip">
-        <span class="help-icon">?</span>
-        <span class="tooltip-text">
-          <strong>Absolute:</strong> Each bearing is independent (e.g., segment 1 = 45°, segment 2 = 135°)<br>
-          <strong>Relative:</strong> Each bearing adds to the previous (e.g., start at 45°, turn +90° = 135°)
-        </span>
-      </span>
 
-      <label for="outputArea" style="margin-left: 15px;">Output Area Unit:</label>
+      <label for="outputArea" style="margin-left: 15px;">Area Unit:</label>
       <select id="outputArea">
         <option value="m2" selected>m²</option>
         <option value="ha">ha</option>
         <option value="acres">acres</option>
         <option value="ft2">ft²</option>
-        <option value="km2">km²</option>
-        <option value="roods">roods</option>
-        <option value="perches">perches</option>
       </select>
 
       <br><br>
@@ -716,47 +443,38 @@
 
       <!-- Starting bearing for Internal/Deflection angles -->
       <div id="startingBearingRow" class="starting-bearing-row">
-        <label for="startingBearing">Starting Bearing (first segment direction):</label>
-        <input type="text" id="startingBearing" value="0" placeholder="e.g., 0 or 45.5">
+        <label>Starting Bearing:</label>
+        <div class="field-group">
+          <input type="number" id="startBearingDeg" class="deg-field" value="0" placeholder="Deg">
+          <span class="field-label">°</span>
+          <input type="number" id="startBearingMin" class="min-field" value="0" min="0" max="59" placeholder="Min">
+          <span class="field-label">'</span>
+          <input type="number" id="startBearingSec" class="sec-field" value="0" min="0" max="59.999" step="0.1" placeholder="Sec">
+          <span class="field-label">"</span>
+        </div>
         <span class="tooltip">
           <span class="help-icon">?</span>
           <span class="tooltip-text">
-            For Internal/Deflection angles, enter the absolute bearing of the first segment (degrees clockwise from North). Subsequent angles will be calculated relative to this.
+            For Internal/Deflection angles, enter the absolute bearing of the first segment (degrees clockwise from North).
           </span>
         </span>
-        <span class="format-hint" id="startingBearingHint">Enter degrees (0-360)</span>
       </div>
 
       <div id="validationErrors"></div>
+      <div id="arcWarning"></div>
 
       <table id="segmentsTable">
         <thead>
           <tr>
-            <th style="width: 50px;">No.</th>
-            <th>
-              Bearing / Angle
-              <span class="tooltip">
-                <span class="help-icon">?</span>
-                <span class="tooltip-text" id="bearingTooltip">Enter bearing in the selected format</span>
-              </span>
-              <div class="format-hint" id="bearingFormatHint">Format: 0-360°</div>
-            </th>
-            <th>
-              Length
-              <div class="format-hint" id="lengthFormatHint">Format: decimal metres</div>
-            </th>
-            <th style="width: 60px;">
-              Flip
-              <span class="tooltip">
-                <span class="help-icon">?</span>
-                <span class="tooltip-text">Reverses the bearing by 180° (points the segment in the opposite direction)</span>
-              </span>
-            </th>
-            <th style="width: 60px;">Delete</th>
+            <th style="width: 40px;">No.</th>
+            <th id="bearingHeader">Bearing (D/M/S)</th>
+            <th id="lengthHeader">Length</th>
+            <th>Radius (m)</th>
+            <th style="width: 50px;">Flip</th>
+            <th style="width: 40px;">Del</th>
           </tr>
         </thead>
         <tbody>
-          <!-- Segment rows will be generated here -->
         </tbody>
       </table>
       <br>
@@ -785,18 +503,6 @@
   </div>
 
   <script>
-    /**
-     * Area Calculator - Survey Polygon Area Tool
-     * Calculates enclosed area from bearing and distance measurements.
-     *
-     * Supported bearing types:
-     * - Whole Circle Bearings (0-360° clockwise from North)
-     * - Decimal Degrees (same as Whole Circle)
-     * - Quadrant Bearings (N45°E format)
-     * - Internal Angles (interior angles with starting bearing)
-     * - Deflection Angles (turn angles: +ve right, -ve left)
-     * - Grads (0-400, where 100 grads = 90°)
-     */
     (function() {
       'use strict';
 
@@ -804,7 +510,7 @@
       // CONSTANTS
       // ============================================
       const TOLERANCE = 1e-6;
-      const GRADS_TO_DEGREES = 0.9; // 360/400
+      const GRADS_TO_DEGREES = 0.9;
       const LINK_TO_METRES = 0.201168;
       const FEET_TO_METRES = 0.3048;
       const INCH_TO_METRES = 0.0254;
@@ -813,286 +519,205 @@
       // UTILITY: Debounce
       // ============================================
       let debounceTimer = null;
-      function debounce(fn, delay = 200) {
+      function debounce(fn, delay = 150) {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fn, delay);
       }
 
       // ============================================
-      // UTILITY: Angle Conversion Functions
+      // DMS FIELD HELPERS
       // ============================================
 
       /**
-       * Convert degrees, minutes, seconds to decimal degrees
+       * Convert D/M/S field values to decimal degrees
+       * @param {number|string} deg - Degrees (can be negative for deflection)
+       * @param {number|string} min - Minutes (0-59)
+       * @param {number|string} sec - Seconds (0-59.999)
+       * @param {boolean} allowNegative - Whether degrees can be negative
+       * @returns {number} Decimal degrees
        */
-      function dmsToDecimal(deg, min, sec) {
-        const sign = deg < 0 ? -1 : 1;
-        return sign * (Math.abs(parseFloat(deg)) + parseFloat(min) / 60 + parseFloat(sec) / 3600);
+      function dmsFieldsToDecimal(deg, min, sec, allowNegative = false) {
+        const d = parseFloat(deg) || 0;
+        const m = parseFloat(min) || 0;
+        const s = parseFloat(sec) || 0;
+
+        if (m < 0 || m >= 60) throw new Error(`Minutes must be 0-59. Got: ${m}`);
+        if (s < 0 || s >= 60) throw new Error(`Seconds must be 0-59.999. Got: ${s}`);
+        if (!allowNegative && d < 0) throw new Error(`Degrees cannot be negative.`);
+
+        const sign = d < 0 ? -1 : 1;
+        return sign * (Math.abs(d) + m / 60 + s / 3600);
       }
 
       /**
-       * Parse a DMS string (e.g., "45d 30m 15s" or "45° 30' 15\"")
-       * Returns decimal degrees
+       * Convert decimal degrees to D/M/S object
+       * @param {number} decimal - Decimal degrees
+       * @returns {Object} { deg, min, sec }
        */
-      function parseDMS(bearingStr) {
-        bearingStr = bearingStr.trim();
-
-        // If it's already a plain number, return it
-        if (!isNaN(bearingStr) && bearingStr !== '') {
-          return parseFloat(bearingStr);
-        }
-
-        // Try to match DMS format: 45d 30m 15s or 45° 30' 15"
-        const regex = /^(-?\d+(?:\.\d+)?)[d°]\s*(\d+(?:\.\d+)?)?[m']?\s*([\d.]+)?[s"]?$/i;
-        const match = bearingStr.match(regex);
-
-        if (!match) {
-          throw new Error(`Invalid DMS format: "${bearingStr}". Use format like "45d 30m 15s" or just decimal degrees.`);
-        }
-
-        const deg = match[1] || 0;
-        const min = match[2] || 0;
-        const sec = match[3] || 0;
-
-        return dmsToDecimal(deg, min, sec);
+      function decimalToDMSFields(decimal) {
+        const sign = decimal < 0 ? -1 : 1;
+        const abs = Math.abs(decimal);
+        const deg = Math.floor(abs);
+        const minFloat = (abs - deg) * 60;
+        const min = Math.floor(minFloat);
+        const sec = ((minFloat - min) * 60);
+        return {
+          deg: sign * deg,
+          min: min,
+          sec: parseFloat(sec.toFixed(1))
+        };
       }
 
       /**
-       * Parse quadrant bearing (e.g., "N45°E", "S 30 W")
-       * Returns decimal degrees (0-360 clockwise from North)
+       * Convert quadrant fields to decimal degrees (whole circle bearing)
+       * @param {string} ns - 'N' or 'S'
+       * @param {number} deg - Degrees (0-90)
+       * @param {number} min - Minutes
+       * @param {number} sec - Seconds
+       * @param {string} ew - 'E' or 'W'
+       * @returns {number} Whole circle bearing (0-360)
        */
-      function parseQuadrantBearing(bearingStr) {
-        bearingStr = bearingStr.trim().toUpperCase();
-
-        // Match patterns like: N45E, N 45° E, N45°E, S30W, etc.
-        const regex = /^(N|S)\s*(\d+(?:\.\d+)?)\s*°?\s*(E|W)$/;
-        const match = bearingStr.match(regex);
-
-        if (!match) {
-          throw new Error(`Invalid quadrant bearing: "${bearingStr}". Use format like "N45°E" or "S30°W".`);
-        }
-
-        const ns = match[1];
-        const angle = parseFloat(match[2]);
-        const ew = match[3];
-
-        // Validate angle is in range 0-90
+      function quadrantFieldsToDecimal(ns, deg, min, sec, ew) {
+        const angle = dmsFieldsToDecimal(deg, min, sec, false);
         if (angle < 0 || angle > 90) {
           throw new Error(`Quadrant angle must be 0-90°. Got: ${angle}°`);
         }
-
-        // Convert to whole circle bearing
         if (ns === 'N' && ew === 'E') return angle;
         if (ns === 'N' && ew === 'W') return 360 - angle;
         if (ns === 'S' && ew === 'E') return 180 - angle;
         if (ns === 'S' && ew === 'W') return 180 + angle;
-
-        throw new Error(`Invalid quadrant bearing: "${bearingStr}"`);
+        throw new Error('Invalid quadrant');
       }
 
       /**
-       * Convert decimal degrees to DMS string
+       * Convert whole circle bearing to quadrant fields
+       * @param {number} bearing - Whole circle bearing (0-360)
+       * @returns {Object} { ns, deg, min, sec, ew }
        */
-      function decimalToDMS(bearing) {
-        const sign = bearing < 0 ? '-' : '';
-        const absBearing = Math.abs(bearing);
-        const degrees = Math.floor(absBearing);
-        const minFloat = (absBearing - degrees) * 60;
-        const minutes = Math.floor(minFloat);
-        const seconds = ((minFloat - minutes) * 60).toFixed(1);
-        return `${sign}${degrees}° ${minutes}' ${seconds}"`;
-      }
-
-      /**
-       * Convert decimal degrees to quadrant bearing string
-       */
-      function decimalToQuadrant(bearing) {
-        // Normalize to 0-360
-        bearing = ((bearing % 360) + 360) % 360;
+      function decimalToQuadrantFields(bearing) {
+        bearing = normalizeBearing(bearing);
+        let ns, ew, angle;
 
         if (bearing <= 90) {
-          return `N${bearing.toFixed(1)}°E`;
+          ns = 'N'; ew = 'E'; angle = bearing;
         } else if (bearing <= 180) {
-          return `S${(180 - bearing).toFixed(1)}°E`;
+          ns = 'S'; ew = 'E'; angle = 180 - bearing;
         } else if (bearing <= 270) {
-          return `S${(bearing - 180).toFixed(1)}°W`;
+          ns = 'S'; ew = 'W'; angle = bearing - 180;
         } else {
-          return `N${(360 - bearing).toFixed(1)}°W`;
+          ns = 'N'; ew = 'W'; angle = 360 - bearing;
         }
+
+        const dms = decimalToDMSFields(angle);
+        return { ns, deg: dms.deg, min: dms.min, sec: dms.sec, ew };
       }
 
-      /**
-       * Normalize bearing to 0-360 range
-       */
       function normalizeBearing(bearing) {
         return ((bearing % 360) + 360) % 360;
       }
 
-      // ============================================
-      // UTILITY: Length Conversion Functions
-      // ============================================
-
-      /**
-       * Parse metric length (metres)
-       */
-      function parseMetricLength(lengthStr) {
-        const value = parseFloat(lengthStr);
-        if (isNaN(value)) {
-          throw new Error(`Invalid metric length: "${lengthStr}". Enter a number.`);
-        }
-        if (value <= 0) {
-          throw new Error(`Length must be positive. Got: ${value}`);
-        }
-        return value;
+      function decimalToDMS(bearing) {
+        const dms = decimalToDMSFields(Math.abs(bearing));
+        const sign = bearing < 0 ? '-' : '';
+        return `${sign}${dms.deg}° ${dms.min}' ${dms.sec.toFixed(1)}"`;
       }
 
-      /**
-       * Parse decimal feet, convert to metres
-       */
-      function parseDecimalFeet(lengthStr) {
-        const value = parseFloat(lengthStr);
-        if (isNaN(value)) {
-          throw new Error(`Invalid decimal feet: "${lengthStr}". Enter a number.`);
-        }
-        if (value <= 0) {
-          throw new Error(`Length must be positive. Got: ${value}`);
-        }
-        return value * FEET_TO_METRES;
-      }
-
-      /**
-       * Parse feet and inches (e.g., "10' 6\"" or "10'6" or "10 6")
-       * Convert to metres
-       */
-      function parseImperialLength(lengthStr) {
-        lengthStr = lengthStr.trim();
-
-        // Try various formats: 10' 6", 10'6", 10' 6, 10 6
-        const regex = /^(\d+(?:\.\d+)?)\s*['\s]+\s*([\d.]+)\s*"?$/;
-        const match = lengthStr.match(regex);
-
-        if (!match) {
-          // Try feet-only format: 10' or 10
-          const feetOnly = /^(\d+(?:\.\d+)?)\s*'?$/.exec(lengthStr);
-          if (feetOnly) {
-            const feet = parseFloat(feetOnly[1]);
-            if (feet <= 0) throw new Error(`Length must be positive. Got: ${feet}`);
-            return feet * FEET_TO_METRES;
-          }
-          throw new Error(`Invalid feet/inches format: "${lengthStr}". Use format like "10' 6\\"" or "10' 6".`);
-        }
-
-        const feet = parseFloat(match[1]);
-        const inches = parseFloat(match[2]);
-
-        if (inches >= 12) {
-          throw new Error(`Inches must be less than 12. Got: ${inches}`);
-        }
-
-        const totalMetres = feet * FEET_TO_METRES + inches * INCH_TO_METRES;
-        if (totalMetres <= 0) {
-          throw new Error(`Length must be positive.`);
-        }
-        return totalMetres;
-      }
-
-      /**
-       * Parse links (Gunter's chain), convert to metres
-       */
-      function parseLinkLength(lengthStr) {
-        const value = parseFloat(lengthStr);
-        if (isNaN(value)) {
-          throw new Error(`Invalid link value: "${lengthStr}". Enter a number.`);
-        }
-        if (value <= 0) {
-          throw new Error(`Length must be positive. Got: ${value}`);
-        }
-        return value * LINK_TO_METRES;
+      function decimalToQuadrant(bearing) {
+        const q = decimalToQuadrantFields(bearing);
+        return `${q.ns}${q.deg}°${q.min}'${q.sec.toFixed(0)}"${q.ew}`;
       }
 
       // ============================================
-      // GEOMETRY: Coordinate and Area Functions
+      // LENGTH HELPERS
       // ============================================
 
-      /**
-       * Compute Cartesian coordinates from segments
-       * Each segment has: { bearing: degrees, length_m: metres }
-       * Returns array of points: [{ x, y }, ...]
-       *
-       * Convention: North = +Y, East = +X
-       * Bearing = clockwise from North
-       */
+      function parseLengthFields(fields, inputUnit) {
+        switch (inputUnit) {
+          case 'Metres':
+            const m = parseFloat(fields.m);
+            if (isNaN(m) || m <= 0) throw new Error('Invalid length');
+            return m;
+          case 'DecimalFeet':
+            const ft = parseFloat(fields.ft);
+            if (isNaN(ft) || ft <= 0) throw new Error('Invalid length');
+            return ft * FEET_TO_METRES;
+          case 'FeetInches':
+            const feet = parseFloat(fields.ft) || 0;
+            const inches = parseFloat(fields.in) || 0;
+            if (inches >= 12) throw new Error('Inches must be < 12');
+            const total = feet * FEET_TO_METRES + inches * INCH_TO_METRES;
+            if (total <= 0) throw new Error('Invalid length');
+            return total;
+          case 'Links':
+            const lk = parseFloat(fields.lk);
+            if (isNaN(lk) || lk <= 0) throw new Error('Invalid length');
+            return lk * LINK_TO_METRES;
+          default:
+            throw new Error('Unknown unit');
+        }
+      }
+
+      function metresToLengthFields(metres, inputUnit) {
+        switch (inputUnit) {
+          case 'Metres':
+            return { m: metres.toFixed(3) };
+          case 'DecimalFeet':
+            return { ft: (metres / FEET_TO_METRES).toFixed(3) };
+          case 'FeetInches':
+            const totalInches = metres / INCH_TO_METRES;
+            const feet = Math.floor(totalInches / 12);
+            const inches = (totalInches % 12).toFixed(1);
+            return { ft: feet.toString(), in: inches };
+          case 'Links':
+            return { lk: (metres / LINK_TO_METRES).toFixed(2) };
+          default:
+            return { m: metres.toFixed(3) };
+        }
+      }
+
+      // ============================================
+      // GEOMETRY FUNCTIONS
+      // ============================================
+
       function computeCoordinates(segments) {
         const points = [{ x: 0, y: 0 }];
         let x = 0, y = 0;
-
         for (const seg of segments) {
           const rad = seg.bearing * Math.PI / 180;
-          // sin for East (X), cos for North (Y)
-          const dx = seg.length_m * Math.sin(rad);
-          const dy = seg.length_m * Math.cos(rad);
-          x += dx;
-          y += dy;
+          x += seg.length_m * Math.sin(rad);
+          y += seg.length_m * Math.cos(rad);
           points.push({ x, y });
         }
-
         return points;
       }
 
-      /**
-       * Compute area using Shoelace formula
-       * Works for any simple polygon (no self-intersection)
-       * Returns area in square metres
-       */
       function computeArea(points) {
         if (points.length < 3) return 0;
-
         let area = 0;
         const n = points.length;
-
         for (let i = 0; i < n; i++) {
           const j = (i + 1) % n;
           area += points[i].x * points[j].y;
           area -= points[j].x * points[i].y;
         }
-
         return Math.abs(area) / 2;
       }
 
-      /**
-       * Compute total perimeter from segments
-       */
       function computePerimeter(segments) {
         return segments.reduce((sum, seg) => sum + seg.length_m, 0);
       }
 
-      /**
-       * Compute misclosure (gap between last point and first point)
-       * Returns null if shape is closed within tolerance
-       * Otherwise returns { length_m, bearing }
-       */
       function computeMisclosure(points) {
         if (points.length < 2) return null;
-
         const first = points[0];
         const last = points[points.length - 1];
         const dx = first.x - last.x;
         const dy = first.y - last.y;
         const length = Math.hypot(dx, dy);
-
-        if (length < TOLERANCE) {
-          return null; // Closed within tolerance
-        }
-
-        // Bearing from last point to first point
+        if (length < TOLERANCE) return null;
         const bearing = normalizeBearing(Math.atan2(dx, dy) * 180 / Math.PI);
-
         return { length_m: length, bearing };
       }
-
-      // ============================================
-      // CONVERSION: Output Report Values
-      // ============================================
 
       function convertAreaValues(m2) {
         return {
@@ -1100,8 +725,6 @@
           ft2: (m2 * 10.7639).toFixed(2) + ' ft²',
           ha: (m2 / 10000).toFixed(4) + ' ha',
           acres: (m2 * 0.000247105).toFixed(4) + ' acres',
-          km2: (m2 / 1e6).toFixed(6) + ' km²',
-          sqmi: (m2 / 2589988.11).toFixed(6) + ' sq mi',
           perches: (m2 / 25.2929).toFixed(2) + ' perches',
           roods: (m2 / 1011.7141).toFixed(4) + ' roods'
         };
@@ -1111,23 +734,14 @@
         return {
           m: m.toFixed(2) + ' m',
           ft: (m * 3.28084).toFixed(2) + ' ft',
-          links: (m / LINK_TO_METRES).toFixed(2) + ' links',
-          km: (m / 1000).toFixed(3) + ' km',
-          miles: (m / 1609.34).toFixed(3) + ' mi'
+          links: (m / LINK_TO_METRES).toFixed(2) + ' links'
         };
       }
 
       // ============================================
-      // DIAGRAM: Canvas Drawing
+      // DIAGRAM DRAWING
       // ============================================
 
-      /**
-       * Draw the survey diagram on canvas
-       * @param {Array} points - Array of {x, y} coordinates
-       * @param {Object|null} misclosure - Misclosure info or null if closed
-       * @param {Object} options - Drawing options
-       * @param {boolean} options.allowFill - Whether to fill the polygon (default: true)
-       */
       function drawDiagram(points, misclosure, options = {}) {
         const { allowFill = true } = options;
         const canvas = document.getElementById('diagramCanvas');
@@ -1142,45 +756,27 @@
           return;
         }
 
-        // Compute bounds
         const xs = points.map(p => p.x);
         const ys = points.map(p => p.y);
-        const minX = Math.min(...xs);
-        const maxX = Math.max(...xs);
-        const minY = Math.min(...ys);
-        const maxY = Math.max(...ys);
+        const minX = Math.min(...xs), maxX = Math.max(...xs);
+        const minY = Math.min(...ys), maxY = Math.max(...ys);
 
         const padding = 40;
         const rangeX = maxX - minX || 1;
         const rangeY = maxY - minY || 1;
-        const scaleX = (canvas.width - 2 * padding) / rangeX;
-        const scaleY = (canvas.height - 2 * padding) / rangeY;
-        const scale = Math.min(scaleX, scaleY);
-
-        // Center the drawing
+        const scale = Math.min((canvas.width - 2 * padding) / rangeX, (canvas.height - 2 * padding) / rangeY);
         const offsetX = (canvas.width - rangeX * scale) / 2 - minX * scale;
         const offsetY = (canvas.height - rangeY * scale) / 2 + maxY * scale;
 
-        // Convert survey coordinates to canvas coordinates
-        // Survey: +Y is North (up), +X is East (right)
-        // Canvas: +Y is down, +X is right
-        function toCanvas(p) {
-          return {
-            x: p.x * scale + offsetX,
-            y: -p.y * scale + offsetY
-          };
-        }
-
+        const toCanvas = p => ({ x: p.x * scale + offsetX, y: -p.y * scale + offsetY });
         const cPoints = points.map(toCanvas);
 
-        // Draw filled polygon (light fill) only if allowed and closed
+        // Fill polygon if closed
         if (allowFill && points.length >= 3 && !misclosure) {
           ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
           ctx.beginPath();
           ctx.moveTo(cPoints[0].x, cPoints[0].y);
-          for (let i = 1; i < cPoints.length; i++) {
-            ctx.lineTo(cPoints[i].x, cPoints[i].y);
-          }
+          for (let i = 1; i < cPoints.length; i++) ctx.lineTo(cPoints[i].x, cPoints[i].y);
           ctx.closePath();
           ctx.fill();
         }
@@ -1190,18 +786,14 @@
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(cPoints[0].x, cPoints[0].y);
-        for (let i = 1; i < cPoints.length; i++) {
-          ctx.lineTo(cPoints[i].x, cPoints[i].y);
-        }
+        for (let i = 1; i < cPoints.length; i++) ctx.lineTo(cPoints[i].x, cPoints[i].y);
 
-        // If closed, close the path; otherwise draw dashed closing line
         if (!misclosure) {
           ctx.closePath();
           ctx.stroke();
         } else {
           ctx.stroke();
-
-          // Draw misclosure line (dashed, red)
+          // Misclosure line
           ctx.strokeStyle = '#e74c3c';
           ctx.setLineDash([5, 5]);
           ctx.beginPath();
@@ -1209,58 +801,31 @@
           ctx.lineTo(cPoints[0].x, cPoints[0].y);
           ctx.stroke();
           ctx.setLineDash([]);
-
-          // Draw arrowhead on misclosure line
-          const lastC = cPoints[cPoints.length - 1];
-          const firstC = cPoints[0];
-          const angle = Math.atan2(firstC.y - lastC.y, firstC.x - lastC.x);
-          const arrowLen = 10;
-
-          ctx.fillStyle = '#e74c3c';
-          ctx.beginPath();
-          ctx.moveTo(firstC.x, firstC.y);
-          ctx.lineTo(
-            firstC.x - arrowLen * Math.cos(angle - Math.PI / 6),
-            firstC.y - arrowLen * Math.sin(angle - Math.PI / 6)
-          );
-          ctx.lineTo(
-            firstC.x - arrowLen * Math.cos(angle + Math.PI / 6),
-            firstC.y - arrowLen * Math.sin(angle + Math.PI / 6)
-          );
-          ctx.closePath();
-          ctx.fill();
         }
 
-        // Draw vertices
+        // Vertices
         ctx.fillStyle = '#2c3e50';
-        for (let i = 0; i < cPoints.length; i++) {
+        for (const cp of cPoints) {
           ctx.beginPath();
-          ctx.arc(cPoints[i].x, cPoints[i].y, 4, 0, Math.PI * 2);
+          ctx.arc(cp.x, cp.y, 4, 0, Math.PI * 2);
           ctx.fill();
         }
 
-        // Label segment midpoints with segment numbers
+        // Segment numbers
         ctx.fillStyle = '#2980b9';
         ctx.font = 'bold 14px Roboto';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-
         for (let i = 0; i < cPoints.length - 1; i++) {
           const midX = (cPoints[i].x + cPoints[i + 1].x) / 2;
           const midY = (cPoints[i].y + cPoints[i + 1].y) / 2;
-
-          // Offset label slightly perpendicular to the line
           const dx = cPoints[i + 1].x - cPoints[i].x;
           const dy = cPoints[i + 1].y - cPoints[i].y;
           const len = Math.hypot(dx, dy) || 1;
-          const offsetDist = 15;
-          const perpX = -dy / len * offsetDist;
-          const perpY = dx / len * offsetDist;
-
-          ctx.fillText((i + 1).toString(), midX + perpX, midY + perpY);
+          ctx.fillText((i + 1).toString(), midX - dy / len * 15, midY + dx / len * 15);
         }
 
-        // Draw North arrow
+        // North arrow
         ctx.save();
         ctx.translate(canvas.width - 30, 30);
         ctx.strokeStyle = '#2c3e50';
@@ -1283,225 +848,281 @@
       }
 
       // ============================================
-      // LIVE UPDATE: Diagram updates while typing
+      // UI: Segment Table
       // ============================================
 
-      // Reference to segment table body (used by live update and UI functions)
       const segmentsTableBody = document.querySelector('#segmentsTable tbody');
-
-      /**
-       * Parse segments permissively for live preview.
-       * Stops at first invalid row rather than blocking.
-       * Returns array of valid segments up to first error.
-       */
-      function parseSegmentsPermissive() {
-        const inputUnit = document.getElementById('inputUnit').value;
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
-        const rows = segmentsTableBody.querySelectorAll('tr');
-
-        const segments = [];
-        let currentBearing = 0;
-
-        // Parse starting bearing for Internal/Deflection modes
-        if (bearingType === 'Internal' || bearingType === 'Deflection') {
-          try {
-            currentBearing = parseDMS(document.getElementById('startingBearing').value);
-            currentBearing = normalizeBearing(currentBearing);
-          } catch (e) {
-            return segments; // Can't proceed without valid starting bearing
-          }
-        }
-
-        // Parse each row, stopping at first error
-        for (let idx = 0; idx < rows.length; idx++) {
-          const row = rows[idx];
-          const bearingInput = row.children[1].firstChild;
-          const lengthInput = row.children[2].firstChild;
-
-          let bearing, length;
-
-          // Try to parse bearing
-          try {
-            const rawBearing = parseBearingValue(bearingInput.value, bearingType);
-
-            if (bearingType === 'Internal') {
-              if (idx === 0) {
-                bearing = currentBearing;
-              } else {
-                const internalAngle = rawBearing;
-                const deflection = 180 - internalAngle;
-                currentBearing = normalizeBearing(currentBearing + deflection);
-                bearing = currentBearing;
-              }
-            } else if (bearingType === 'Deflection') {
-              if (idx === 0) {
-                bearing = normalizeBearing(currentBearing + rawBearing);
-                currentBearing = bearing;
-              } else {
-                currentBearing = normalizeBearing(currentBearing + rawBearing);
-                bearing = currentBearing;
-              }
-            } else if (angleInputMode === 'Relative') {
-              if (idx === 0) {
-                currentBearing = normalizeBearing(rawBearing);
-              } else {
-                currentBearing = normalizeBearing(currentBearing + rawBearing);
-              }
-              bearing = currentBearing;
-            } else {
-              bearing = normalizeBearing(rawBearing);
-            }
-          } catch (e) {
-            break; // Stop at first invalid bearing
-          }
-
-          // Try to parse length
-          try {
-            length = parseLengthValue(lengthInput.value, inputUnit);
-          } catch (e) {
-            break; // Stop at first invalid length
-          }
-
-          segments.push({ bearing, length_m: length });
-        }
-
-        return segments;
-      }
-
-      /**
-       * Live update diagram without blocking on errors.
-       * Draws partial polyline up to first invalid row.
-       */
-      function liveUpdateDiagram() {
-        const segments = parseSegmentsPermissive();
-        const points = computeCoordinates(segments);
-
-        // Only compute misclosure and allow fill if we have 3+ valid segments
-        const canClose = segments.length >= 3;
-        const misclosure = canClose ? computeMisclosure(points) : { length_m: 1 }; // Force "open" if < 3
-        const allowFill = canClose && !misclosure;
-
-        drawDiagram(points, canClose ? misclosure : null, { allowFill });
-      }
-
-      /**
-       * Debounced version of liveUpdateDiagram for smooth typing
-       */
-      function triggerLiveUpdate() {
-        debounce(liveUpdateDiagram, 150);
-      }
-
-      // ============================================
-      // UI: Segment Table Management
-      // ============================================
 
       function clearSegmentsTable() {
         segmentsTableBody.innerHTML = '';
       }
 
-      /**
-       * Get default values based on current settings to create a closed square
-       */
-      function getDefaultSegmentValues(segmentIndex, totalSegments) {
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
-        const inputUnit = document.getElementById('inputUnit').value;
-
-        // Default length based on unit
-        let defaultLength;
-        switch (inputUnit) {
-          case 'Metres': defaultLength = '10.0'; break;
-          case 'DecimalFeet': defaultLength = '32.81'; break;
-          case 'FeetInches': defaultLength = "32' 10\""; break;
-          case 'Links': defaultLength = '49.71'; break;
-          default: defaultLength = '10.0';
-        }
-
-        // Calculate bearing to create a closed square (or reasonable polygon)
-        let defaultBearing;
-
-        if (bearingType === 'Internal') {
-          // For internal angles of a square: 90° each
-          defaultBearing = '90';
-        } else if (bearingType === 'Deflection') {
-          // For deflection angles of a square: turn 90° right each time
-          defaultBearing = segmentIndex === 0 ? '0' : '90';
-        } else if (bearingType === 'Quadrant') {
-          // Create a square with quadrant bearings
-          const bearings = ['N0°E', 'N90°E', 'S0°E', 'N90°W'];
-          defaultBearing = bearings[segmentIndex % 4];
-        } else if (bearingType === 'Grads') {
-          // Grads equivalent of square bearings
-          const gradBearings = [0, 100, 200, 300];
-          defaultBearing = gradBearings[segmentIndex % 4].toString();
-        } else {
-          // Whole circle / decimal degrees - create a square
-          if (angleInputMode === 'Relative') {
-            defaultBearing = segmentIndex === 0 ? '0' : '90';
-          } else {
-            const bearings = [0, 90, 180, 270];
-            defaultBearing = bearings[segmentIndex % 4].toString();
-          }
-        }
-
-        return { bearing: defaultBearing, length: defaultLength };
+      function getBearingType() {
+        return document.getElementById('bearingType').value;
       }
 
-      function addSegmentRow(bearing = null, length = null) {
+      function getInputUnit() {
+        return document.getElementById('inputUnit').value;
+      }
+
+      function getAngleInputMode() {
+        return document.getElementById('angleInputMode').value;
+      }
+
+      /**
+       * Create bearing input fields based on bearing type
+       */
+      function createBearingInputs(bearingType, defaultValues = null) {
+        const container = document.createElement('div');
+        container.className = 'field-group';
+        container.dataset.bearingType = bearingType;
+
+        if (bearingType === 'Grads') {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.className = 'grads-field';
+          input.placeholder = 'Grads';
+          input.step = 'any';
+          input.value = defaultValues?.grads ?? '';
+          input.addEventListener('input', () => triggerLiveUpdate());
+          container.appendChild(input);
+          const lbl = document.createElement('span');
+          lbl.className = 'field-label';
+          lbl.textContent = 'g';
+          container.appendChild(lbl);
+        } else if (bearingType === 'Quadrant') {
+          // NS dropdown
+          const nsSelect = document.createElement('select');
+          nsSelect.innerHTML = '<option value="N">N</option><option value="S">S</option>';
+          nsSelect.value = defaultValues?.ns ?? 'N';
+          nsSelect.addEventListener('change', () => triggerLiveUpdate());
+          container.appendChild(nsSelect);
+
+          // Deg/Min/Sec
+          ['deg', 'min', 'sec'].forEach((field, i) => {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = field + '-field';
+            input.placeholder = field.charAt(0).toUpperCase() + field.slice(1);
+            input.min = 0;
+            input.max = field === 'deg' ? 90 : 59;
+            input.step = field === 'sec' ? '0.1' : '1';
+            input.value = defaultValues?.[field] ?? (i === 0 ? '0' : '0');
+            input.addEventListener('input', () => triggerLiveUpdate());
+            container.appendChild(input);
+            const lbl = document.createElement('span');
+            lbl.className = 'field-label';
+            lbl.textContent = ['°', "'", '"'][i];
+            container.appendChild(lbl);
+          });
+
+          // EW dropdown
+          const ewSelect = document.createElement('select');
+          ewSelect.innerHTML = '<option value="E">E</option><option value="W">W</option>';
+          ewSelect.value = defaultValues?.ew ?? 'E';
+          ewSelect.addEventListener('change', () => triggerLiveUpdate());
+          container.appendChild(ewSelect);
+        } else {
+          // DMS fields for WholeCircle, DecimalDegrees, Internal, Deflection
+          const allowNeg = bearingType === 'Deflection';
+          ['deg', 'min', 'sec'].forEach((field, i) => {
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.className = field + '-field';
+            input.placeholder = field.charAt(0).toUpperCase() + field.slice(1);
+            if (field === 'deg') {
+              if (!allowNeg) input.min = 0;
+            } else {
+              input.min = 0;
+              input.max = 59;
+            }
+            input.step = field === 'sec' ? '0.1' : '1';
+            input.value = defaultValues?.[field] ?? '0';
+            input.addEventListener('input', () => triggerLiveUpdate());
+            container.appendChild(input);
+            const lbl = document.createElement('span');
+            lbl.className = 'field-label';
+            lbl.textContent = ['°', "'", '"'][i];
+            container.appendChild(lbl);
+          });
+        }
+
+        return container;
+      }
+
+      /**
+       * Create length input fields based on unit
+       */
+      function createLengthInputs(inputUnit, defaultValues = null) {
+        const container = document.createElement('div');
+        container.className = 'field-group';
+        container.dataset.inputUnit = inputUnit;
+
+        if (inputUnit === 'FeetInches') {
+          const ftInput = document.createElement('input');
+          ftInput.type = 'number';
+          ftInput.className = 'length-field';
+          ftInput.placeholder = 'Ft';
+          ftInput.min = 0;
+          ftInput.value = defaultValues?.ft ?? '';
+          ftInput.addEventListener('input', () => triggerLiveUpdate());
+          container.appendChild(ftInput);
+          const ftLbl = document.createElement('span');
+          ftLbl.className = 'field-label';
+          ftLbl.textContent = "'";
+          container.appendChild(ftLbl);
+
+          const inInput = document.createElement('input');
+          inInput.type = 'number';
+          inInput.className = 'length-field';
+          inInput.placeholder = 'In';
+          inInput.min = 0;
+          inInput.max = 11.999;
+          inInput.step = '0.1';
+          inInput.value = defaultValues?.in ?? '';
+          inInput.addEventListener('input', () => triggerLiveUpdate());
+          container.appendChild(inInput);
+          const inLbl = document.createElement('span');
+          inLbl.className = 'field-label';
+          inLbl.textContent = '"';
+          container.appendChild(inLbl);
+        } else {
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.className = 'length-field';
+          input.step = 'any';
+          input.min = 0;
+          const units = { Metres: 'm', DecimalFeet: 'ft', Links: 'lk' };
+          input.placeholder = units[inputUnit] || 'm';
+          const key = inputUnit === 'Metres' ? 'm' : inputUnit === 'DecimalFeet' ? 'ft' : 'lk';
+          input.value = defaultValues?.[key] ?? '';
+          input.addEventListener('input', () => triggerLiveUpdate());
+          container.appendChild(input);
+          const lbl = document.createElement('span');
+          lbl.className = 'field-label';
+          lbl.textContent = units[inputUnit] || 'm';
+          container.appendChild(lbl);
+        }
+
+        return container;
+      }
+
+      /**
+       * Create radius input
+       */
+      function createRadiusInput(defaultValue = '') {
+        const container = document.createElement('div');
+        container.className = 'field-group';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'radius-field';
+        input.placeholder = 'Opt.';
+        input.step = 'any';
+        input.min = 0;
+        input.value = defaultValue;
+        input.addEventListener('input', () => {
+          checkArcWarnings();
+          triggerLiveUpdate();
+        });
+        container.appendChild(input);
+        const lbl = document.createElement('span');
+        lbl.className = 'field-label';
+        lbl.textContent = 'm';
+        container.appendChild(lbl);
+        return container;
+      }
+
+      /**
+       * Get default bearing values for creating a closed square
+       */
+      function getDefaultBearing(segmentIndex) {
+        const bearingType = getBearingType();
+        const angleInputMode = getAngleInputMode();
+
+        if (bearingType === 'Internal') {
+          return { deg: 90, min: 0, sec: 0 };
+        } else if (bearingType === 'Deflection') {
+          return { deg: segmentIndex === 0 ? 0 : 90, min: 0, sec: 0 };
+        } else if (bearingType === 'Quadrant') {
+          const bearings = [
+            { ns: 'N', deg: 0, min: 0, sec: 0, ew: 'E' },
+            { ns: 'N', deg: 90, min: 0, sec: 0, ew: 'E' },
+            { ns: 'S', deg: 0, min: 0, sec: 0, ew: 'E' },
+            { ns: 'N', deg: 90, min: 0, sec: 0, ew: 'W' }
+          ];
+          return bearings[segmentIndex % 4];
+        } else if (bearingType === 'Grads') {
+          const gradBearings = [0, 100, 200, 300];
+          return { grads: gradBearings[segmentIndex % 4] };
+        } else {
+          if (angleInputMode === 'Relative') {
+            return { deg: segmentIndex === 0 ? 0 : 90, min: 0, sec: 0 };
+          } else {
+            const bearings = [0, 90, 180, 270];
+            return { deg: bearings[segmentIndex % 4], min: 0, sec: 0 };
+          }
+        }
+      }
+
+      /**
+       * Get default length values
+       */
+      function getDefaultLength() {
+        const unit = getInputUnit();
+        switch (unit) {
+          case 'Metres': return { m: '10' };
+          case 'DecimalFeet': return { ft: '32.81' };
+          case 'FeetInches': return { ft: '32', in: '10' };
+          case 'Links': return { lk: '49.71' };
+          default: return { m: '10' };
+        }
+      }
+
+      function addSegmentRow(bearingVals = null, lengthVals = null, radiusVal = '') {
         const rowIndex = segmentsTableBody.querySelectorAll('tr').length;
-        const totalSegments = parseInt(document.getElementById('numSegments').value) || 4;
-        const defaults = getDefaultSegmentValues(rowIndex, totalSegments);
+        const bearingType = getBearingType();
+        const inputUnit = getInputUnit();
 
         const row = document.createElement('tr');
 
-        // Segment number cell
+        // Segment number
         const cellNo = document.createElement('td');
         cellNo.textContent = (rowIndex + 1).toString();
         row.appendChild(cellNo);
 
-        // Bearing input cell
+        // Bearing inputs
         const cellBearing = document.createElement('td');
-        const inputBearing = document.createElement('input');
-        inputBearing.type = 'text';
-        inputBearing.value = bearing !== null ? bearing : defaults.bearing;
-        inputBearing.style.width = '95%';
-        inputBearing.placeholder = getPlaceholderForBearingType();
-        inputBearing.addEventListener('input', (e) => {
-          clearInputError(e);
-          triggerLiveUpdate();
-        });
-        cellBearing.appendChild(inputBearing);
+        const bearingDefaults = bearingVals ?? getDefaultBearing(rowIndex);
+        cellBearing.appendChild(createBearingInputs(bearingType, bearingDefaults));
         row.appendChild(cellBearing);
 
-        // Length input cell
+        // Length inputs
         const cellLength = document.createElement('td');
-        const inputLength = document.createElement('input');
-        inputLength.type = 'text';
-        inputLength.value = length !== null ? length : defaults.length;
-        inputLength.style.width = '95%';
-        inputLength.placeholder = getPlaceholderForLengthUnit();
-        inputLength.addEventListener('input', (e) => {
-          clearInputError(e);
-          triggerLiveUpdate();
-        });
-        cellLength.appendChild(inputLength);
+        const lengthDefaults = lengthVals ?? getDefaultLength();
+        cellLength.appendChild(createLengthInputs(inputUnit, lengthDefaults));
         row.appendChild(cellLength);
 
-        // Flip button cell
+        // Radius input
+        const cellRadius = document.createElement('td');
+        cellRadius.appendChild(createRadiusInput(radiusVal));
+        row.appendChild(cellRadius);
+
+        // Flip button
         const cellFlip = document.createElement('td');
         const flipBtn = document.createElement('button');
-        flipBtn.textContent = 'Flip';
-        flipBtn.title = 'Reverse bearing by 180°';
+        flipBtn.textContent = '↔';
+        flipBtn.title = 'Flip bearing 180°';
+        flipBtn.style.padding = '6px 10px';
         flipBtn.addEventListener('click', () => flipSegment(row));
         cellFlip.appendChild(flipBtn);
         row.appendChild(cellFlip);
 
-        // Delete button cell
+        // Delete button
         const cellDel = document.createElement('td');
         const delBtn = document.createElement('button');
-        delBtn.textContent = 'X';
-        delBtn.title = 'Delete this segment';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Delete segment';
+        delBtn.style.padding = '6px 10px';
         delBtn.style.background = '#e74c3c';
         delBtn.addEventListener('click', () => {
           row.remove();
@@ -1522,638 +1143,608 @@
         });
       }
 
-      function clearInputError(e) {
-        e.target.classList.remove('error');
-      }
+      /**
+       * Get bearing values from row
+       */
+      function getBearingFromRow(row) {
+        const container = row.children[1].querySelector('.field-group');
+        const bearingType = container.dataset.bearingType;
+        const inputs = container.querySelectorAll('input');
+        const selects = container.querySelectorAll('select');
 
-      function getPlaceholderForBearingType() {
-        const bearingType = document.getElementById('bearingType').value;
-        switch (bearingType) {
-          case 'Quadrant': return 'e.g., N45°E';
-          case 'Internal': return 'e.g., 90';
-          case 'Deflection': return 'e.g., +90 or -45';
-          case 'Grads': return 'e.g., 100';
-          default: return 'e.g., 45.5';
-        }
-      }
-
-      function getPlaceholderForLengthUnit() {
-        const inputUnit = document.getElementById('inputUnit').value;
-        switch (inputUnit) {
-          case 'DecimalFeet': return 'e.g., 32.81';
-          case 'FeetInches': return "e.g., 10' 6\"";
-          case 'Links': return 'e.g., 49.71';
-          default: return 'e.g., 10.5';
-        }
-      }
-
-      // ============================================
-      // UI: Update Format Hints
-      // ============================================
-
-      function updateFormatHints() {
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
-        const inputUnit = document.getElementById('inputUnit').value;
-
-        // Update bearing format hint
-        const bearingHint = document.getElementById('bearingFormatHint');
-        const bearingTooltip = document.getElementById('bearingTooltip');
-
-        let bearingHintText, bearingTooltipText;
-        switch (bearingType) {
-          case 'Quadrant':
-            bearingHintText = 'Format: N45°E, S30°W';
-            bearingTooltipText = 'Quadrant bearings: direction from N or S, angle 0-90°, then E or W. Example: N45°E means 45° east of north.';
-            break;
-          case 'Internal':
-            bearingHintText = 'Format: interior angle (0-180°)';
-            bearingTooltipText = 'Internal angles: the interior angle of the polygon at each vertex. For a square, use 90°. For a regular hexagon, use 120°.';
-            break;
-          case 'Deflection':
-            bearingHintText = 'Format: turn angle (+right, -left)';
-            bearingTooltipText = 'Deflection angles: how much you turn from the previous line. Positive = turn right, Negative = turn left. For a square turning right, use +90.';
-            break;
-          case 'Grads':
-            bearingHintText = 'Format: 0-400 grads';
-            bearingTooltipText = 'Grads (gradians): 0 = North, 100 = East, 200 = South, 300 = West. 400 grads = 360°.';
-            break;
-          default:
-            bearingHintText = angleInputMode === 'Relative'
-              ? 'Format: degrees (first is absolute, rest are cumulative)'
-              : 'Format: 0-360° from North';
-            bearingTooltipText = 'Whole circle bearing: degrees clockwise from North. 0° = North, 90° = East, 180° = South, 270° = West.';
-        }
-        bearingHint.textContent = bearingHintText;
-        bearingTooltip.textContent = bearingTooltipText;
-
-        // Update length format hint
-        const lengthHint = document.getElementById('lengthFormatHint');
-        switch (inputUnit) {
-          case 'DecimalFeet':
-            lengthHint.textContent = 'Format: decimal feet (e.g., 32.81)';
-            break;
-          case 'FeetInches':
-            lengthHint.textContent = "Format: feet' inches\" (e.g., 10' 6\")";
-            break;
-          case 'Links':
-            lengthHint.textContent = 'Format: links (1 link = 0.201m)';
-            break;
-          default:
-            lengthHint.textContent = 'Format: decimal metres (e.g., 10.5)';
-        }
-
-        // Show/hide starting bearing row for Internal and Deflection angles
-        const startingBearingRow = document.getElementById('startingBearingRow');
-        if (bearingType === 'Internal' || bearingType === 'Deflection') {
-          startingBearingRow.classList.add('visible');
+        if (bearingType === 'Grads') {
+          return { grads: parseFloat(inputs[0].value) || 0 };
+        } else if (bearingType === 'Quadrant') {
+          return {
+            ns: selects[0].value,
+            deg: parseFloat(inputs[0].value) || 0,
+            min: parseFloat(inputs[1].value) || 0,
+            sec: parseFloat(inputs[2].value) || 0,
+            ew: selects[1].value
+          };
         } else {
-          startingBearingRow.classList.remove('visible');
+          return {
+            deg: parseFloat(inputs[0].value) || 0,
+            min: parseFloat(inputs[1].value) || 0,
+            sec: parseFloat(inputs[2].value) || 0
+          };
         }
+      }
 
-        // Update placeholders in existing rows
+      /**
+       * Set bearing values in row
+       */
+      function setBearingInRow(row, values) {
+        const container = row.children[1].querySelector('.field-group');
+        const bearingType = container.dataset.bearingType;
+        const inputs = container.querySelectorAll('input');
+        const selects = container.querySelectorAll('select');
+
+        if (bearingType === 'Grads') {
+          inputs[0].value = values.grads ?? 0;
+        } else if (bearingType === 'Quadrant') {
+          selects[0].value = values.ns ?? 'N';
+          inputs[0].value = values.deg ?? 0;
+          inputs[1].value = values.min ?? 0;
+          inputs[2].value = values.sec ?? 0;
+          selects[1].value = values.ew ?? 'E';
+        } else {
+          inputs[0].value = values.deg ?? 0;
+          inputs[1].value = values.min ?? 0;
+          inputs[2].value = values.sec ?? 0;
+        }
+      }
+
+      /**
+       * Get length values from row
+       */
+      function getLengthFromRow(row) {
+        const container = row.children[2].querySelector('.field-group');
+        const inputs = container.querySelectorAll('input');
+        const unit = container.dataset.inputUnit;
+
+        if (unit === 'FeetInches') {
+          return { ft: inputs[0].value, in: inputs[1].value };
+        } else {
+          const key = unit === 'Metres' ? 'm' : unit === 'DecimalFeet' ? 'ft' : 'lk';
+          return { [key]: inputs[0].value };
+        }
+      }
+
+      /**
+       * Get radius value from row
+       */
+      function getRadiusFromRow(row) {
+        const input = row.children[3].querySelector('input');
+        return input.value;
+      }
+
+      /**
+       * Check for arc radius warnings
+       */
+      function checkArcWarnings() {
         const rows = segmentsTableBody.querySelectorAll('tr');
+        let hasRadius = false;
         rows.forEach(row => {
-          const bearingInput = row.children[1].firstChild;
-          const lengthInput = row.children[2].firstChild;
-          bearingInput.placeholder = getPlaceholderForBearingType();
-          lengthInput.placeholder = getPlaceholderForLengthUnit();
+          const radius = getRadiusFromRow(row);
+          if (radius && parseFloat(radius) > 0) hasRadius = true;
         });
+
+        const warningDiv = document.getElementById('arcWarning');
+        if (hasRadius) {
+          warningDiv.innerHTML = '<div class="info-box">⚠️ Arc radius entered but arc geometry not yet supported; segments will be treated as straight lines.</div>';
+        } else {
+          warningDiv.innerHTML = '';
+        }
       }
 
       // ============================================
-      // CALCULATION: Parse and Compute
+      // PARSING: Get decimal values from fields
       // ============================================
 
-      /**
-       * Parse a bearing value based on current bearing type
-       * Returns decimal degrees (0-360)
-       */
-      function parseBearingValue(value, bearingType) {
-        value = value.trim();
+      function parseBearingFromRow(row) {
+        const container = row.children[1].querySelector('.field-group');
+        const bearingType = container.dataset.bearingType;
+        const inputs = container.querySelectorAll('input');
+        const selects = container.querySelectorAll('select');
 
-        if (value === '') {
-          throw new Error('Bearing is required');
-        }
-
-        let degrees;
-
-        switch (bearingType) {
-          case 'Quadrant':
-            degrees = parseQuadrantBearing(value);
-            break;
-          case 'Grads':
-            const grads = parseFloat(value);
-            if (isNaN(grads)) {
-              throw new Error(`Invalid grads value: "${value}"`);
-            }
-            degrees = grads * GRADS_TO_DEGREES;
-            break;
-          case 'Internal':
-          case 'Deflection':
-          case 'WholeCircle':
-          case 'DecimalDegrees':
-          default:
-            degrees = parseDMS(value);
-            break;
-        }
-
-        return degrees;
-      }
-
-      /**
-       * Parse length value based on current unit
-       * Returns metres
-       */
-      function parseLengthValue(value, inputUnit) {
-        value = value.trim();
-
-        if (value === '') {
-          throw new Error('Length is required');
-        }
-
-        switch (inputUnit) {
-          case 'DecimalFeet':
-            return parseDecimalFeet(value);
-          case 'FeetInches':
-            return parseImperialLength(value);
-          case 'Links':
-            return parseLinkLength(value);
-          case 'Metres':
-          default:
-            return parseMetricLength(value);
+        if (bearingType === 'Grads') {
+          const grads = parseFloat(inputs[0].value);
+          if (isNaN(grads)) throw new Error('Invalid grads');
+          return grads * GRADS_TO_DEGREES;
+        } else if (bearingType === 'Quadrant') {
+          return quadrantFieldsToDecimal(
+            selects[0].value,
+            inputs[0].value,
+            inputs[1].value,
+            inputs[2].value,
+            selects[1].value
+          );
+        } else {
+          const allowNeg = bearingType === 'Deflection';
+          return dmsFieldsToDecimal(inputs[0].value, inputs[1].value, inputs[2].value, allowNeg);
         }
       }
 
-      /**
-       * Validate all inputs and return parsed segments
-       * Returns { valid: boolean, segments: [], errors: [] }
-       */
-      function validateAndParseInputs() {
-        const inputUnit = document.getElementById('inputUnit').value;
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
+      function parseLengthFromRow(row) {
+        const container = row.children[2].querySelector('.field-group');
+        const inputs = container.querySelectorAll('input');
+        const unit = container.dataset.inputUnit;
+
+        if (unit === 'FeetInches') {
+          return parseLengthFields({ ft: inputs[0].value, in: inputs[1].value }, 'FeetInches');
+        } else {
+          const key = unit === 'Metres' ? 'm' : unit === 'DecimalFeet' ? 'ft' : 'lk';
+          return parseLengthFields({ [key]: inputs[0].value }, unit);
+        }
+      }
+
+      function parseStartingBearing() {
+        const deg = document.getElementById('startBearingDeg').value;
+        const min = document.getElementById('startBearingMin').value;
+        const sec = document.getElementById('startBearingSec').value;
+        return dmsFieldsToDecimal(deg, min, sec, false);
+      }
+
+      // ============================================
+      // LIVE UPDATE
+      // ============================================
+
+      function parseSegmentsPermissive() {
+        const bearingType = getBearingType();
+        const angleInputMode = getAngleInputMode();
         const rows = segmentsTableBody.querySelectorAll('tr');
-
-        const errors = [];
         const segments = [];
         let currentBearing = 0;
 
-        // Clear previous error highlights
-        rows.forEach(row => {
-          row.children[1].firstChild.classList.remove('error');
-          row.children[2].firstChild.classList.remove('error');
-        });
-        document.getElementById('startingBearing').classList.remove('error');
-
-        // Check minimum segments
-        if (rows.length < 3) {
-          errors.push('At least 3 segments are required to form a polygon.');
-        }
-
-        // Parse starting bearing for Internal/Deflection modes
         if (bearingType === 'Internal' || bearingType === 'Deflection') {
-          const startingBearingInput = document.getElementById('startingBearing');
           try {
-            currentBearing = parseDMS(startingBearingInput.value);
+            currentBearing = parseStartingBearing();
             currentBearing = normalizeBearing(currentBearing);
           } catch (e) {
-            startingBearingInput.classList.add('error');
-            errors.push(`Starting bearing: ${e.message}`);
+            return segments;
           }
         }
 
-        // Parse each segment
-        rows.forEach((row, idx) => {
-          const bearingInput = row.children[1].firstChild;
-          const lengthInput = row.children[2].firstChild;
-          const segNum = idx + 1;
-
+        for (let idx = 0; idx < rows.length; idx++) {
+          const row = rows[idx];
           let bearing, length;
-          let segmentValid = true;
 
-          // Parse bearing
           try {
-            const rawBearing = parseBearingValue(bearingInput.value, bearingType);
+            const rawBearing = parseBearingFromRow(row);
 
-            // Calculate absolute bearing based on mode and type
             if (bearingType === 'Internal') {
               if (idx === 0) {
-                // First segment uses starting bearing
                 bearing = currentBearing;
               } else {
-                // Turn by (180 - internal angle) to the right
-                // Internal angle is the interior angle of the polygon
-                const internalAngle = rawBearing;
-                if (internalAngle <= 0 || internalAngle >= 360) {
-                  throw new Error(`Internal angle must be between 0° and 360°. Got: ${internalAngle}°`);
-                }
-                const deflection = 180 - internalAngle;
+                const deflection = 180 - rawBearing;
                 currentBearing = normalizeBearing(currentBearing + deflection);
                 bearing = currentBearing;
               }
             } else if (bearingType === 'Deflection') {
               if (idx === 0) {
-                // First segment: starting bearing + first deflection
                 bearing = normalizeBearing(currentBearing + rawBearing);
                 currentBearing = bearing;
               } else {
-                // Subsequent: add deflection to current bearing
                 currentBearing = normalizeBearing(currentBearing + rawBearing);
                 bearing = currentBearing;
               }
             } else if (angleInputMode === 'Relative') {
               if (idx === 0) {
-                // First segment is absolute
                 currentBearing = normalizeBearing(rawBearing);
               } else {
-                // Add relative angle to previous bearing
                 currentBearing = normalizeBearing(currentBearing + rawBearing);
               }
               bearing = currentBearing;
             } else {
-              // Absolute mode
               bearing = normalizeBearing(rawBearing);
             }
           } catch (e) {
-            bearingInput.classList.add('error');
-            errors.push(`Segment ${segNum} bearing: ${e.message}`);
-            segmentValid = false;
+            break;
           }
 
-          // Parse length
           try {
-            length = parseLengthValue(lengthInput.value, inputUnit);
+            length = parseLengthFromRow(row);
           } catch (e) {
-            lengthInput.classList.add('error');
-            errors.push(`Segment ${segNum} length: ${e.message}`);
-            segmentValid = false;
+            break;
           }
 
-          if (segmentValid) {
-            segments.push({ bearing, length_m: length, index: idx });
-          }
-        });
+          segments.push({ bearing, length_m: length });
+        }
 
-        return {
-          valid: errors.length === 0 && segments.length === rows.length,
-          segments,
-          errors
-        };
+        return segments;
+      }
+
+      function liveUpdateDiagram() {
+        const segments = parseSegmentsPermissive();
+        const points = computeCoordinates(segments);
+        const canClose = segments.length >= 3;
+        const misclosure = canClose ? computeMisclosure(points) : { length_m: 1 };
+        const allowFill = canClose && !misclosure;
+        drawDiagram(points, canClose ? misclosure : null, { allowFill });
+      }
+
+      function triggerLiveUpdate() {
+        debounce(liveUpdateDiagram, 150);
       }
 
       // ============================================
-      // FLIP: Reverse Bearing
+      // FLIP SEGMENT
       // ============================================
 
       function flipSegment(row) {
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
-        const inputField = row.children[1].firstChild;
+        const container = row.children[1].querySelector('.field-group');
+        const bearingType = container.dataset.bearingType;
+
+        if (bearingType === 'Internal') {
+          alert('Flip not supported for Internal angles (they describe shape, not direction).');
+          return;
+        }
 
         try {
-          const rawValue = inputField.value.trim();
           let currentDegrees;
 
-          // Parse current value
-          if (bearingType === 'Quadrant') {
-            currentDegrees = parseQuadrantBearing(rawValue);
+          if (bearingType === 'Deflection') {
+            // Negate the deflection
+            const vals = getBearingFromRow(row);
+            const decimal = dmsFieldsToDecimal(vals.deg, vals.min, vals.sec, true);
+            const flipped = decimalToDMSFields(-decimal);
+            setBearingInRow(row, flipped);
           } else if (bearingType === 'Grads') {
-            currentDegrees = parseFloat(rawValue) * GRADS_TO_DEGREES;
-          } else if (bearingType === 'Internal') {
-            // For internal angles, flipping doesn't make sense in the same way
-            // We'll flip the resulting direction instead
-            currentDegrees = parseFloat(rawValue);
-            const flipped = 360 - currentDegrees;
-            inputField.value = flipped.toFixed(2);
-            recalculate();
-            return;
-          } else if (bearingType === 'Deflection') {
-            // For deflection, negate the angle
-            currentDegrees = parseFloat(rawValue);
-            inputField.value = (-currentDegrees).toFixed(2);
-            recalculate();
-            return;
+            const vals = getBearingFromRow(row);
+            const flipped = ((vals.grads + 200) % 400);
+            setBearingInRow(row, { grads: flipped.toFixed(2) });
+          } else if (bearingType === 'Quadrant') {
+            const vals = getBearingFromRow(row);
+            currentDegrees = quadrantFieldsToDecimal(vals.ns, vals.deg, vals.min, vals.sec, vals.ew);
+            const flipped = normalizeBearing(currentDegrees + 180);
+            const newVals = decimalToQuadrantFields(flipped);
+            setBearingInRow(row, newVals);
           } else {
-            currentDegrees = parseDMS(rawValue);
+            // DMS
+            const vals = getBearingFromRow(row);
+            currentDegrees = dmsFieldsToDecimal(vals.deg, vals.min, vals.sec, false);
+            const flipped = normalizeBearing(currentDegrees + 180);
+            const newVals = decimalToDMSFields(flipped);
+            setBearingInRow(row, newVals);
           }
 
-          // Add 180° and normalize
-          const flipped = normalizeBearing(currentDegrees + 180);
-
-          // Format back
-          if (bearingType === 'Quadrant') {
-            inputField.value = decimalToQuadrant(flipped);
-          } else if (bearingType === 'Grads') {
-            inputField.value = (flipped / GRADS_TO_DEGREES).toFixed(2);
-          } else {
-            inputField.value = flipped.toFixed(2);
-          }
-
-          inputField.classList.remove('error');
-          recalculate();
+          triggerLiveUpdate();
         } catch (e) {
-          inputField.classList.add('error');
+          console.error('Flip error:', e);
         }
       }
 
       // ============================================
-      // MAIN: Recalculation
+      // REBUILD ROWS ON SETTINGS CHANGE
       // ============================================
 
-      function recalculate() {
-        const validationErrorsDiv = document.getElementById('validationErrors');
-        const resultsDisplay = document.getElementById('resultsDisplay');
+      function rebuildAllRows() {
+        const bearingType = getBearingType();
+        const inputUnit = getInputUnit();
+        const rows = Array.from(segmentsTableBody.querySelectorAll('tr'));
 
-        // Validate and parse
+        // Try to preserve values by converting to metres and decimal degrees
+        const savedData = rows.map((row, idx) => {
+          let bearingDegrees = null;
+          let lengthMetres = null;
+          let radius = getRadiusFromRow(row);
+
+          try {
+            // Get current bearing as decimal degrees
+            const oldContainer = row.children[1].querySelector('.field-group');
+            const oldType = oldContainer.dataset.bearingType;
+            const inputs = oldContainer.querySelectorAll('input');
+            const selects = oldContainer.querySelectorAll('select');
+
+            if (oldType === 'Grads') {
+              bearingDegrees = (parseFloat(inputs[0].value) || 0) * GRADS_TO_DEGREES;
+            } else if (oldType === 'Quadrant') {
+              bearingDegrees = quadrantFieldsToDecimal(
+                selects[0].value,
+                inputs[0].value, inputs[1].value, inputs[2].value,
+                selects[1].value
+              );
+            } else {
+              bearingDegrees = dmsFieldsToDecimal(inputs[0].value, inputs[1].value, inputs[2].value, oldType === 'Deflection');
+            }
+          } catch (e) {
+            bearingDegrees = null;
+          }
+
+          try {
+            lengthMetres = parseLengthFromRow(row);
+          } catch (e) {
+            lengthMetres = null;
+          }
+
+          return { bearingDegrees, lengthMetres, radius };
+        });
+
+        // Clear and rebuild
+        clearSegmentsTable();
+
+        savedData.forEach((data, idx) => {
+          // Convert bearing to new format
+          let bearingVals = null;
+          if (data.bearingDegrees !== null) {
+            if (bearingType === 'Grads') {
+              bearingVals = { grads: (data.bearingDegrees / GRADS_TO_DEGREES).toFixed(2) };
+            } else if (bearingType === 'Quadrant') {
+              bearingVals = decimalToQuadrantFields(data.bearingDegrees);
+            } else {
+              bearingVals = decimalToDMSFields(data.bearingDegrees);
+            }
+          }
+
+          // Convert length to new format
+          let lengthVals = null;
+          if (data.lengthMetres !== null) {
+            lengthVals = metresToLengthFields(data.lengthMetres, inputUnit);
+          }
+
+          addSegmentRow(bearingVals, lengthVals, data.radius);
+        });
+
+        updateHeaders();
+        liveUpdateDiagram();
+      }
+
+      function updateHeaders() {
+        const bearingType = getBearingType();
+        const inputUnit = getInputUnit();
+
+        const bearingHeader = document.getElementById('bearingHeader');
+        switch (bearingType) {
+          case 'Grads': bearingHeader.textContent = 'Bearing (Grads)'; break;
+          case 'Quadrant': bearingHeader.textContent = 'Bearing (Quadrant)'; break;
+          case 'Internal': bearingHeader.textContent = 'Internal Angle'; break;
+          case 'Deflection': bearingHeader.textContent = 'Deflection Angle'; break;
+          default: bearingHeader.textContent = 'Bearing (D/M/S)';
+        }
+
+        const lengthHeader = document.getElementById('lengthHeader');
+        switch (inputUnit) {
+          case 'DecimalFeet': lengthHeader.textContent = 'Length (ft)'; break;
+          case 'FeetInches': lengthHeader.textContent = 'Length (ft/in)'; break;
+          case 'Links': lengthHeader.textContent = 'Length (links)'; break;
+          default: lengthHeader.textContent = 'Length (m)';
+        }
+
+        // Show/hide starting bearing row
+        const startRow = document.getElementById('startingBearingRow');
+        if (bearingType === 'Internal' || bearingType === 'Deflection') {
+          startRow.classList.add('visible');
+        } else {
+          startRow.classList.remove('visible');
+        }
+      }
+
+      // ============================================
+      // VALIDATION & RECALCULATE
+      // ============================================
+
+      function validateAndParseInputs() {
+        const bearingType = getBearingType();
+        const angleInputMode = getAngleInputMode();
+        const rows = segmentsTableBody.querySelectorAll('tr');
+        const errors = [];
+        const segments = [];
+        let currentBearing = 0;
+
+        // Clear errors
+        rows.forEach(row => {
+          row.children[1].querySelectorAll('input').forEach(i => i.classList.remove('error'));
+          row.children[2].querySelectorAll('input').forEach(i => i.classList.remove('error'));
+        });
+        document.getElementById('startBearingDeg').classList.remove('error');
+
+        if (rows.length < 3) {
+          errors.push('At least 3 segments are required.');
+        }
+
+        if (bearingType === 'Internal' || bearingType === 'Deflection') {
+          try {
+            currentBearing = parseStartingBearing();
+            currentBearing = normalizeBearing(currentBearing);
+          } catch (e) {
+            document.getElementById('startBearingDeg').classList.add('error');
+            errors.push(`Starting bearing: ${e.message}`);
+          }
+        }
+
+        rows.forEach((row, idx) => {
+          let bearing, length;
+          let valid = true;
+
+          try {
+            const rawBearing = parseBearingFromRow(row);
+
+            if (bearingType === 'Internal') {
+              if (idx === 0) {
+                bearing = currentBearing;
+              } else {
+                if (rawBearing <= 0 || rawBearing >= 360) {
+                  throw new Error('Internal angle must be 0-360°');
+                }
+                const deflection = 180 - rawBearing;
+                currentBearing = normalizeBearing(currentBearing + deflection);
+                bearing = currentBearing;
+              }
+            } else if (bearingType === 'Deflection') {
+              if (idx === 0) {
+                bearing = normalizeBearing(currentBearing + rawBearing);
+                currentBearing = bearing;
+              } else {
+                currentBearing = normalizeBearing(currentBearing + rawBearing);
+                bearing = currentBearing;
+              }
+            } else if (angleInputMode === 'Relative') {
+              if (idx === 0) {
+                currentBearing = normalizeBearing(rawBearing);
+              } else {
+                currentBearing = normalizeBearing(currentBearing + rawBearing);
+              }
+              bearing = currentBearing;
+            } else {
+              bearing = normalizeBearing(rawBearing);
+            }
+          } catch (e) {
+            row.children[1].querySelectorAll('input').forEach(i => i.classList.add('error'));
+            errors.push(`Segment ${idx + 1} bearing: ${e.message}`);
+            valid = false;
+          }
+
+          try {
+            length = parseLengthFromRow(row);
+          } catch (e) {
+            row.children[2].querySelectorAll('input').forEach(i => i.classList.add('error'));
+            errors.push(`Segment ${idx + 1} length: ${e.message}`);
+            valid = false;
+          }
+
+          // Check radius warning
+          const radius = getRadiusFromRow(row);
+          if (radius && parseFloat(radius) > 0) {
+            // Already warned via checkArcWarnings
+          }
+
+          if (valid) {
+            segments.push({ bearing, length_m: length, radius: parseFloat(radius) || 0 });
+          }
+        });
+
+        return { valid: errors.length === 0 && segments.length === rows.length, segments, errors };
+      }
+
+      function recalculate() {
+        const errorsDiv = document.getElementById('validationErrors');
+        const resultsDiv = document.getElementById('resultsDisplay');
         const result = validateAndParseInputs();
 
-        // Show errors if any
         if (result.errors.length > 0) {
-          validationErrorsDiv.innerHTML = `
-            <div class="error-box">
-              <strong>Please fix the following issues:</strong>
-              <ul>
-                ${result.errors.map(e => `<li>${e}</li>`).join('')}
-              </ul>
-            </div>
-          `;
-          resultsDisplay.innerHTML = '<p style="color:#e74c3c;">Cannot calculate - please fix input errors above.</p>';
-
-          // Clear diagram
-          const canvas = document.getElementById('diagramCanvas');
-          const ctx = canvas.getContext('2d');
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = '#e74c3c';
-          ctx.font = '14px Roboto';
-          ctx.textAlign = 'center';
-          ctx.fillText('Fix input errors to see diagram', canvas.width / 2, canvas.height / 2);
+          errorsDiv.innerHTML = `<div class="error-box"><strong>Please fix:</strong><ul>${result.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+          resultsDiv.innerHTML = '<p style="color:#e74c3c;">Cannot calculate - fix errors above.</p>';
           return;
         }
 
-        validationErrorsDiv.innerHTML = '';
+        errorsDiv.innerHTML = '';
+        checkArcWarnings();
 
-        // Compute geometry
         const segments = result.segments;
         const points = computeCoordinates(segments);
         const area = computeArea(points);
         const perimeter = computePerimeter(segments);
         const misclosure = computeMisclosure(points);
 
-        // Draw diagram
         drawDiagram(points, misclosure);
-
-        // Generate report
-        resultsDisplay.innerHTML = generateResultsReport(area, perimeter, misclosure, segments);
+        resultsDiv.innerHTML = generateReport(area, perimeter, misclosure, segments);
       }
 
       // ============================================
-      // REPORT: Generate Results
+      // REPORT GENERATION
       // ============================================
 
-      function generateResultsReport(area, perimeter, misclosure, segments) {
+      function generateReport(area, perimeter, misclosure, segments) {
         const now = new Date();
-        const dateStr = now.toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        });
-        const timeStr = now.toLocaleTimeString('en-GB', {
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-
-        const bearingType = document.getElementById('bearingType').value;
-        const angleInputMode = document.getElementById('angleInputMode').value;
-        const inputUnit = document.getElementById('inputUnit').value;
-        const planDescription = document.getElementById('planDescription').value.trim();
-
-        const bearingTypeLabels = {
-          'WholeCircle': 'Whole Circle Bearings',
-          'DecimalDegrees': 'Decimal Degrees',
-          'Quadrant': 'Quadrant Bearings',
-          'Internal': 'Internal Angles',
-          'Deflection': 'Deflection Angles',
-          'Grads': 'Grads'
-        };
+        const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const inputUnit = getInputUnit();
+        const planDesc = document.getElementById('planDescription').value.trim();
 
         const areaVals = convertAreaValues(area);
         const perimVals = convertPerimeterValues(perimeter);
 
-        // Closure status
-        let closureHtml;
-        let closureStatus;
-        let accuracyRatio = 'N/A';
-
+        let closureHtml, closureStatus, accuracyRatio = 'N/A';
         if (misclosure) {
-          const misclosureText = `${misclosure.length_m.toFixed(4)} m at bearing ${misclosure.bearing.toFixed(2)}°`;
           accuracyRatio = perimeter > 0 ? `1:${Math.round(perimeter / misclosure.length_m).toLocaleString()}` : 'N/A';
-          closureStatus = 'Open (misclosure present)';
-          closureHtml = `
-            <div class="warning-box no-break">
-              <strong>⚠ Polygon Does Not Close</strong><br>
-              <div style="margin-top: 6px;">
-                <strong>Misclosure:</strong> ${misclosureText}<br>
-                <strong>Accuracy Ratio:</strong> ${accuracyRatio}<br>
-                <small style="color: #7f8c8d;">Note: The calculated area assumes a straight line closes the gap between the last and first points.</small>
-              </div>
-            </div>
-          `;
+          closureStatus = 'Open';
+          closureHtml = `<div class="warning-box no-break"><strong>⚠ Polygon Does Not Close</strong><br>Misclosure: ${misclosure.length_m.toFixed(4)} m at ${misclosure.bearing.toFixed(2)}°<br>Accuracy: ${accuracyRatio}</div>`;
         } else {
           closureStatus = 'Closed';
-          closureHtml = `
-            <div class="print-closed-status no-break">
-              <strong>✓ Polygon is Closed</strong><br>
-              <small>The traverse closes within acceptable tolerance.</small>
-            </div>
-          `;
+          closureHtml = `<div class="print-closed-status no-break"><strong>✓ Polygon is Closed</strong></div>`;
         }
 
-        // Build segment table
-        let segmentTableRows = '';
+        // Check if any arcs
+        const hasArcs = segments.some(s => s.radius > 0);
+
+        let tableRows = '';
         for (let i = 0; i < segments.length; i++) {
           const seg = segments[i];
-          let displayLength;
-          switch (inputUnit) {
-            case 'DecimalFeet':
-              displayLength = (seg.length_m / FEET_TO_METRES).toFixed(3) + ' ft';
-              break;
-            case 'FeetInches':
-              const totalInches = seg.length_m / INCH_TO_METRES;
-              const feet = Math.floor(totalInches / 12);
-              const inches = (totalInches % 12).toFixed(1);
-              displayLength = `${feet}' ${inches}"`;
-              break;
-            case 'Links':
-              displayLength = (seg.length_m / LINK_TO_METRES).toFixed(2) + ' lk';
-              break;
-            default:
-              displayLength = seg.length_m.toFixed(3) + ' m';
-          }
+          const lf = metresToLengthFields(seg.length_m, inputUnit);
+          const displayLen = inputUnit === 'FeetInches' ? `${lf.ft}' ${lf.in}"` :
+                            inputUnit === 'DecimalFeet' ? `${lf.ft} ft` :
+                            inputUnit === 'Links' ? `${lf.lk} lk` : `${lf.m} m`;
+          const radiusCol = hasArcs ? `<td>${seg.radius > 0 ? seg.radius.toFixed(2) + ' m*' : '-'}</td>` : '';
 
-          segmentTableRows += `
-            <tr>
-              <td>${i + 1}</td>
-              <td>${seg.bearing.toFixed(2)}°</td>
-              <td>${decimalToQuadrant(seg.bearing)}</td>
-              <td>${seg.length_m.toFixed(3)}</td>
-              <td>${displayLength}</td>
-            </tr>
-          `;
+          tableRows += `<tr>
+            <td>${i + 1}</td>
+            <td>${seg.bearing.toFixed(2)}°</td>
+            <td>${decimalToDMS(seg.bearing)}</td>
+            <td>${decimalToQuadrant(seg.bearing)}</td>
+            <td>${seg.length_m.toFixed(3)}</td>
+            <td>${displayLen}</td>
+            ${radiusCol}
+          </tr>`;
         }
 
-        // Capture diagram
-        const canvas = document.getElementById('diagramCanvas');
-        const diagramImage = canvas.toDataURL('image/png');
+        const radiusHeader = hasArcs ? '<th>Radius</th>' : '';
+        const arcNote = hasArcs ? '<p style="color:#9a7b0a;font-size:0.9em;">* Arc radius entered but treated as straight line (arc geometry not yet implemented)</p>' : '';
 
-        // Description section (only if provided)
-        const descriptionHtml = planDescription ? `
-          <div class="print-description no-break">
-            <strong>Description:</strong> ${planDescription}
-          </div>
-        ` : '';
+        const canvas = document.getElementById('diagramCanvas');
+        const diagramImg = canvas.toDataURL('image/png');
+
+        const descHtml = planDesc ? `<div class="print-description no-break"><strong>Description:</strong> ${planDesc}</div>` : '';
 
         return `
-          <!-- Professional Report Header -->
-          <div class="print-report-header">
-            <h1>Area Calculation Report</h1>
-            <h2>Survey Traverse Analysis</h2>
-          </div>
-
-          <div class="print-meta">
-            Generated: ${dateStr} at ${timeStr}
-          </div>
-
-          ${descriptionHtml}
-
-          <!-- Key Results Summary Box -->
+          <div class="print-report-header"><h1>Area Calculation Report</h1><h2>Survey Traverse Analysis</h2></div>
+          <div class="print-meta">Generated: ${dateStr} at ${timeStr}</div>
+          ${descHtml}
           <div class="print-summary-box no-break">
-            <h4>Summary of Results</h4>
+            <h4>Summary</h4>
             <div class="print-summary-grid">
-              <div class="print-summary-item">
-                <span class="print-summary-label">Total Area:</span>
-                <span class="print-summary-value">${areaVals.m2}</span>
-              </div>
-              <div class="print-summary-item">
-                <span class="print-summary-label">Area (Hectares):</span>
-                <span class="print-summary-value">${areaVals.ha}</span>
-              </div>
-              <div class="print-summary-item">
-                <span class="print-summary-label">Total Perimeter:</span>
-                <span class="print-summary-value">${perimVals.m}</span>
-              </div>
-              <div class="print-summary-item">
-                <span class="print-summary-label">Number of Sides:</span>
-                <span class="print-summary-value">${segments.length}</span>
-              </div>
-              <div class="print-summary-item">
-                <span class="print-summary-label">Closure Status:</span>
-                <span class="print-summary-value">${closureStatus}</span>
-              </div>
-              <div class="print-summary-item">
-                <span class="print-summary-label">Accuracy Ratio:</span>
-                <span class="print-summary-value">${accuracyRatio}</span>
-              </div>
+              <div class="print-summary-item"><span class="print-summary-label">Area:</span><span class="print-summary-value">${areaVals.m2}</span></div>
+              <div class="print-summary-item"><span class="print-summary-label">Hectares:</span><span class="print-summary-value">${areaVals.ha}</span></div>
+              <div class="print-summary-item"><span class="print-summary-label">Perimeter:</span><span class="print-summary-value">${perimVals.m}</span></div>
+              <div class="print-summary-item"><span class="print-summary-label">Sides:</span><span class="print-summary-value">${segments.length}</span></div>
+              <div class="print-summary-item"><span class="print-summary-label">Status:</span><span class="print-summary-value">${closureStatus}</span></div>
+              <div class="print-summary-item"><span class="print-summary-label">Accuracy:</span><span class="print-summary-value">${accuracyRatio}</span></div>
             </div>
           </div>
-
-          <!-- Survey Diagram -->
           <div class="print-diagram-section no-break">
-            <img src="${diagramImage}" alt="Survey Diagram">
-            <div class="print-diagram-caption">
-              Figure 1: Survey traverse diagram (segment numbers shown)
-            </div>
+            <img src="${diagramImg}" alt="Survey Diagram">
+            <div class="print-diagram-caption">Figure 1: Survey traverse diagram</div>
           </div>
-
-          <!-- Closure Status -->
           <h3>Closure Status</h3>
           ${closureHtml}
-
-          <!-- Two Column Layout for Area and Perimeter -->
           <div class="print-two-column no-break">
             <div class="print-column">
-              <h3>Calculated Area</h3>
+              <h3>Area</h3>
               <ul>
-                <li><strong>Square metres:</strong> ${areaVals.m2}</li>
-                <li>Square feet: ${areaVals.ft2}</li>
-                <li>Hectares: ${areaVals.ha}</li>
-                <li>Acres: ${areaVals.acres}</li>
-                <li>Perches: ${areaVals.perches}</li>
-                <li>Roods: ${areaVals.roods}</li>
+                <li><strong>${areaVals.m2}</strong></li>
+                <li>${areaVals.ft2}</li>
+                <li>${areaVals.ha}</li>
+                <li>${areaVals.acres}</li>
               </ul>
             </div>
             <div class="print-column">
-              <h3>Calculated Perimeter</h3>
+              <h3>Perimeter</h3>
               <ul>
-                <li><strong>Metres:</strong> ${perimVals.m}</li>
-                <li>Feet: ${perimVals.ft}</li>
-                <li>Links: ${perimVals.links}</li>
-                <li>Kilometres: ${perimVals.km}</li>
-                <li>Miles: ${perimVals.miles}</li>
+                <li><strong>${perimVals.m}</strong></li>
+                <li>${perimVals.ft}</li>
+                <li>${perimVals.links}</li>
               </ul>
             </div>
           </div>
-
-          <!-- Segment Details Table -->
           <h3>Traverse Schedule</h3>
           <table class="no-break">
-            <thead>
-              <tr>
-                <th>Seg</th>
-                <th>Bearing (°)</th>
-                <th>Quadrant</th>
-                <th>Length (m)</th>
-                <th>Length (${inputUnit})</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${segmentTableRows}
-            </tbody>
+            <thead><tr><th>Seg</th><th>Bearing (°)</th><th>Bearing (DMS)</th><th>Quadrant</th><th>Length (m)</th><th>Length (${inputUnit})</th>${radiusHeader}</tr></thead>
+            <tbody>${tableRows}</tbody>
           </table>
-
-          <!-- Methodology Note -->
-          <div class="no-break" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-size: 0.9em;">
-            <strong>Calculation Method:</strong><br>
-            <ul style="margin: 5px 0 0 20px; padding: 0;">
-              <li>Input format: ${bearingTypeLabels[bearingType] || bearingType} (${angleInputMode} mode)</li>
-              <li>Distance units: ${inputUnit}</li>
-              <li>Coordinate system: Local grid (origin at first point)</li>
-              <li>Area calculation: Shoelace formula (Surveyor's formula)</li>
-            </ul>
-          </div>
-
-          <!-- Footer -->
-          <div class="print-footer">
-            <div class="print-footer-content">
-              <span>Area Calculator Tool</span>
-              <span>Tom Phillips © ${new Date().getFullYear()}</span>
-              <span>Page 1</span>
-            </div>
-          </div>
+          ${arcNote}
+          <div class="print-footer"><div class="print-footer-content"><span>Area Calculator</span><span>Tom Phillips © ${new Date().getFullYear()}</span></div></div>
         `;
       }
-
-      // ============================================
-      // SAVE & PRINT
-      // ============================================
-
-      document.getElementById('saveResultsBtn').addEventListener('click', () => {
-        const reportContent = document.getElementById('resultsDisplay').innerText +
-          '\n\nPlan Description:\n' + document.getElementById('planDescription').value;
-        const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'Area_Calculator_Report.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      });
-
-      document.getElementById('printPreviewBtn').addEventListener('click', () => {
-        window.print();
-      });
 
       // ============================================
       // EVENT LISTENERS
@@ -2161,20 +1752,12 @@
 
       document.getElementById('setSegmentsBtn').addEventListener('click', () => {
         const num = parseInt(document.getElementById('numSegments').value);
-        if (isNaN(num) || num < 3) {
-          alert('Please enter at least 3 segments.');
-          return;
-        }
-        if (num > 100) {
-          alert('Maximum 100 segments allowed.');
-          return;
-        }
+        if (isNaN(num) || num < 3) { alert('Min 3 segments.'); return; }
+        if (num > 100) { alert('Max 100 segments.'); return; }
         clearSegmentsTable();
-        for (let i = 0; i < num; i++) {
-          addSegmentRow();
-        }
-        updateFormatHints();
-        liveUpdateDiagram(); // Draw initial diagram
+        for (let i = 0; i < num; i++) addSegmentRow();
+        updateHeaders();
+        liveUpdateDiagram();
       });
 
       document.getElementById('addSegmentBtn').addEventListener('click', () => {
@@ -2184,35 +1767,42 @@
 
       document.getElementById('recalcBtn').addEventListener('click', recalculate);
 
-      // Starting bearing input - live update for Internal/Deflection modes
-      document.getElementById('startingBearing').addEventListener('input', () => {
+      // Starting bearing inputs
+      ['startBearingDeg', 'startBearingMin', 'startBearingSec'].forEach(id => {
+        document.getElementById(id).addEventListener('input', () => triggerLiveUpdate());
+      });
+
+      // Settings changes - rebuild rows
+      document.getElementById('bearingType').addEventListener('change', rebuildAllRows);
+      document.getElementById('inputUnit').addEventListener('change', rebuildAllRows);
+      document.getElementById('angleInputMode').addEventListener('change', () => {
+        updateHeaders();
         triggerLiveUpdate();
       });
 
-      // Update hints and diagram when settings change
-      document.getElementById('bearingType').addEventListener('change', () => {
-        updateFormatHints();
-        triggerLiveUpdate();
+      document.getElementById('saveResultsBtn').addEventListener('click', () => {
+        const content = document.getElementById('resultsDisplay').innerText;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Area_Report.txt';
+        a.click();
+        URL.revokeObjectURL(url);
       });
-      document.getElementById('angleInputMode').addEventListener('change', () => {
-        updateFormatHints();
-        triggerLiveUpdate();
-      });
-      document.getElementById('inputUnit').addEventListener('change', () => {
-        updateFormatHints();
-        triggerLiveUpdate();
-      });
+
+      document.getElementById('printPreviewBtn').addEventListener('click', () => window.print());
 
       // ============================================
       // INITIALIZATION
       // ============================================
 
       window.onload = () => {
-        document.getElementById('angleInputMode').value = 'Absolute';
         document.getElementById('bearingType').value = 'WholeCircle';
-        updateFormatHints();
+        document.getElementById('inputUnit').value = 'Metres';
+        document.getElementById('angleInputMode').value = 'Absolute';
+        updateHeaders();
         document.getElementById('setSegmentsBtn').click();
-        // Initial diagram is drawn by setSegmentsBtn click handler
       };
 
     })();
