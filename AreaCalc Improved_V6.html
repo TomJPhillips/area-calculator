@@ -810,6 +810,15 @@
       const INCH_TO_METRES = 0.0254;
 
       // ============================================
+      // UTILITY: Debounce
+      // ============================================
+      let debounceTimer = null;
+      function debounce(fn, delay = 200) {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(fn, delay);
+      }
+
+      // ============================================
       // UTILITY: Angle Conversion Functions
       // ============================================
 
@@ -1112,7 +1121,15 @@
       // DIAGRAM: Canvas Drawing
       // ============================================
 
-      function drawDiagram(points, misclosure) {
+      /**
+       * Draw the survey diagram on canvas
+       * @param {Array} points - Array of {x, y} coordinates
+       * @param {Object|null} misclosure - Misclosure info or null if closed
+       * @param {Object} options - Drawing options
+       * @param {boolean} options.allowFill - Whether to fill the polygon (default: true)
+       */
+      function drawDiagram(points, misclosure, options = {}) {
+        const { allowFill = true } = options;
         const canvas = document.getElementById('diagramCanvas');
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1156,8 +1173,8 @@
 
         const cPoints = points.map(toCanvas);
 
-        // Draw filled polygon (light fill)
-        if (points.length >= 3) {
+        // Draw filled polygon (light fill) only if allowed and closed
+        if (allowFill && points.length >= 3 && !misclosure) {
           ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
           ctx.beginPath();
           ctx.moveTo(cPoints[0].x, cPoints[0].y);
@@ -1266,10 +1283,118 @@
       }
 
       // ============================================
-      // UI: Segment Table Management
+      // LIVE UPDATE: Diagram updates while typing
       // ============================================
 
+      // Reference to segment table body (used by live update and UI functions)
       const segmentsTableBody = document.querySelector('#segmentsTable tbody');
+
+      /**
+       * Parse segments permissively for live preview.
+       * Stops at first invalid row rather than blocking.
+       * Returns array of valid segments up to first error.
+       */
+      function parseSegmentsPermissive() {
+        const inputUnit = document.getElementById('inputUnit').value;
+        const bearingType = document.getElementById('bearingType').value;
+        const angleInputMode = document.getElementById('angleInputMode').value;
+        const rows = segmentsTableBody.querySelectorAll('tr');
+
+        const segments = [];
+        let currentBearing = 0;
+
+        // Parse starting bearing for Internal/Deflection modes
+        if (bearingType === 'Internal' || bearingType === 'Deflection') {
+          try {
+            currentBearing = parseDMS(document.getElementById('startingBearing').value);
+            currentBearing = normalizeBearing(currentBearing);
+          } catch (e) {
+            return segments; // Can't proceed without valid starting bearing
+          }
+        }
+
+        // Parse each row, stopping at first error
+        for (let idx = 0; idx < rows.length; idx++) {
+          const row = rows[idx];
+          const bearingInput = row.children[1].firstChild;
+          const lengthInput = row.children[2].firstChild;
+
+          let bearing, length;
+
+          // Try to parse bearing
+          try {
+            const rawBearing = parseBearingValue(bearingInput.value, bearingType);
+
+            if (bearingType === 'Internal') {
+              if (idx === 0) {
+                bearing = currentBearing;
+              } else {
+                const internalAngle = rawBearing;
+                const deflection = 180 - internalAngle;
+                currentBearing = normalizeBearing(currentBearing + deflection);
+                bearing = currentBearing;
+              }
+            } else if (bearingType === 'Deflection') {
+              if (idx === 0) {
+                bearing = normalizeBearing(currentBearing + rawBearing);
+                currentBearing = bearing;
+              } else {
+                currentBearing = normalizeBearing(currentBearing + rawBearing);
+                bearing = currentBearing;
+              }
+            } else if (angleInputMode === 'Relative') {
+              if (idx === 0) {
+                currentBearing = normalizeBearing(rawBearing);
+              } else {
+                currentBearing = normalizeBearing(currentBearing + rawBearing);
+              }
+              bearing = currentBearing;
+            } else {
+              bearing = normalizeBearing(rawBearing);
+            }
+          } catch (e) {
+            break; // Stop at first invalid bearing
+          }
+
+          // Try to parse length
+          try {
+            length = parseLengthValue(lengthInput.value, inputUnit);
+          } catch (e) {
+            break; // Stop at first invalid length
+          }
+
+          segments.push({ bearing, length_m: length });
+        }
+
+        return segments;
+      }
+
+      /**
+       * Live update diagram without blocking on errors.
+       * Draws partial polyline up to first invalid row.
+       */
+      function liveUpdateDiagram() {
+        const segments = parseSegmentsPermissive();
+        const points = computeCoordinates(segments);
+
+        // Only compute misclosure and allow fill if we have 3+ valid segments
+        const canClose = segments.length >= 3;
+        const misclosure = canClose ? computeMisclosure(points) : { length_m: 1 }; // Force "open" if < 3
+        const allowFill = canClose && !misclosure;
+
+        drawDiagram(points, canClose ? misclosure : null, { allowFill });
+      }
+
+      /**
+       * Debounced version of liveUpdateDiagram for smooth typing
+       */
+      function triggerLiveUpdate() {
+        debounce(liveUpdateDiagram, 150);
+      }
+
+      // ============================================
+      // UI: Segment Table Management
+      // ============================================
 
       function clearSegmentsTable() {
         segmentsTableBody.innerHTML = '';
@@ -1342,7 +1467,10 @@
         inputBearing.value = bearing !== null ? bearing : defaults.bearing;
         inputBearing.style.width = '95%';
         inputBearing.placeholder = getPlaceholderForBearingType();
-        inputBearing.addEventListener('input', clearInputError);
+        inputBearing.addEventListener('input', (e) => {
+          clearInputError(e);
+          triggerLiveUpdate();
+        });
         cellBearing.appendChild(inputBearing);
         row.appendChild(cellBearing);
 
@@ -1353,7 +1481,10 @@
         inputLength.value = length !== null ? length : defaults.length;
         inputLength.style.width = '95%';
         inputLength.placeholder = getPlaceholderForLengthUnit();
-        inputLength.addEventListener('input', clearInputError);
+        inputLength.addEventListener('input', (e) => {
+          clearInputError(e);
+          triggerLiveUpdate();
+        });
         cellLength.appendChild(inputLength);
         row.appendChild(cellLength);
 
@@ -1375,6 +1506,7 @@
         delBtn.addEventListener('click', () => {
           row.remove();
           updateSegmentNumbers();
+          triggerLiveUpdate();
         });
         cellDel.appendChild(delBtn);
         row.appendChild(cellDel);
@@ -2042,18 +2174,34 @@
           addSegmentRow();
         }
         updateFormatHints();
+        liveUpdateDiagram(); // Draw initial diagram
       });
 
       document.getElementById('addSegmentBtn').addEventListener('click', () => {
         addSegmentRow();
+        triggerLiveUpdate();
       });
 
       document.getElementById('recalcBtn').addEventListener('click', recalculate);
 
-      // Update hints when settings change
-      document.getElementById('bearingType').addEventListener('change', updateFormatHints);
-      document.getElementById('angleInputMode').addEventListener('change', updateFormatHints);
-      document.getElementById('inputUnit').addEventListener('change', updateFormatHints);
+      // Starting bearing input - live update for Internal/Deflection modes
+      document.getElementById('startingBearing').addEventListener('input', () => {
+        triggerLiveUpdate();
+      });
+
+      // Update hints and diagram when settings change
+      document.getElementById('bearingType').addEventListener('change', () => {
+        updateFormatHints();
+        triggerLiveUpdate();
+      });
+      document.getElementById('angleInputMode').addEventListener('change', () => {
+        updateFormatHints();
+        triggerLiveUpdate();
+      });
+      document.getElementById('inputUnit').addEventListener('change', () => {
+        updateFormatHints();
+        triggerLiveUpdate();
+      });
 
       // ============================================
       // INITIALIZATION
@@ -2064,6 +2212,7 @@
         document.getElementById('bearingType').value = 'WholeCircle';
         updateFormatHints();
         document.getElementById('setSegmentsBtn').click();
+        // Initial diagram is drawn by setSegmentsBtn click handler
       };
 
     })();
