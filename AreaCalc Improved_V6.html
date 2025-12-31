@@ -291,12 +291,10 @@
         <option value="25000">1:25,000 (Very High)</option>
         <option value="0">No limit</option>
       </select>
-      <label style="margin-left:15px;">
-        <input type="checkbox" id="forceClose"> Force close polygon
-        <span class="tooltip"><span class="help-icon">?</span>
-          <span class="tooltip-text">When enabled, automatically closes the polygon by adjusting the final point to the start. Use only when misclosure is within acceptable tolerance.</span>
-        </span>
-      </label>
+      <button id="addMisclosureBtn" style="margin-left:15px;">Add Closing Line</button>
+      <span class="tooltip"><span class="help-icon">?</span>
+        <span class="tooltip-text">Adds a segment with the exact bearing and distance needed to close the polygon.</span>
+      </span>
 
       <br><br>
       <button id="exportJsonBtn">Export JSON</button>
@@ -832,8 +830,7 @@
             inputUnit: getInputUnit(),
             angleInputMode: getAngleInputMode(),
             lengthType: getLengthType(),
-            closureTolerance: document.getElementById('closureTolerance').value,
-            forceClose: document.getElementById('forceClose').checked
+            closureTolerance: document.getElementById('closureTolerance').value
           },
           startingBearing: {
             deg: document.getElementById('startBearingDeg').value,
@@ -880,7 +877,6 @@
             document.getElementById('angleInputMode').value = data.settings.angleInputMode || 'Absolute';
             document.getElementById('lengthType').value = data.settings.lengthType || 'chord';
             document.getElementById('closureTolerance').value = data.settings.closureTolerance || '10000';
-            document.getElementById('forceClose').checked = data.settings.forceClose || false;
           }
 
           // Restore starting bearing
@@ -1538,15 +1534,13 @@
 
         const segments = result.segments;
         const rawInputs = result.rawInputs;
-        let points = computeCoordinates(segments);
+        const points = computeCoordinates(segments);
         const perimeter = computePerimeterWithArcs(segments);
-        let misclosure = computeMisclosure(points);
+        const misclosure = computeMisclosure(points);
 
         // Tolerance check
         const toleranceLimit = parseInt(document.getElementById('closureTolerance').value);
-        const forceClose = document.getElementById('forceClose').checked;
         let toleranceWarning = null;
-        let forceClosed = false;
 
         if (misclosure && toleranceLimit > 0) {
           const actualRatio = perimeter / misclosure.length_m;
@@ -1559,21 +1553,10 @@
           }
         }
 
-        // Force close if enabled and within reasonable tolerance
-        if (forceClose && misclosure) {
-          // Only force close if misclosure is less than 1% of perimeter
-          if (misclosure.length_m < perimeter * 0.01) {
-            // Adjust final point to close the polygon
-            points[points.length - 1] = { x: points[0].x, y: points[0].y };
-            misclosure = null;
-            forceClosed = true;
-          }
-        }
-
         const area = computeAreaWithArcs(points, segments);
 
         drawDiagram(points, segments, misclosure);
-        resDiv.innerHTML = generateReport(area, perimeter, misclosure, segments, rawInputs, toleranceWarning, forceClosed);
+        resDiv.innerHTML = generateReport(area, perimeter, misclosure, segments, rawInputs, toleranceWarning);
         saveToLocalStorage();
       }
 
@@ -1587,7 +1570,7 @@
         return `${raw.deg}°${raw.min}'${raw.sec}"`;
       }
 
-      function generateReport(area, perimeter, misclosure, segments, rawInputs = [], toleranceWarning = null, forceClosed = false) {
+      function generateReport(area, perimeter, misclosure, segments, rawInputs = [], toleranceWarning = null) {
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         const unit = getInputUnit();
@@ -1603,10 +1586,8 @@
           closureStatus = 'Open';
           closureHtml = `<div class="warning-box no-break"><strong>⚠ Polygon Does Not Close</strong><br>Misclosure: ${misclosure.length_m.toFixed(4)} m at ${misclosure.bearing.toFixed(2)}°<br>Accuracy: ${accuracyRatio}</div>`;
         } else {
-          closureStatus = forceClosed ? 'Force Closed' : 'Closed';
-          closureHtml = forceClosed
-            ? `<div class="print-closed-status no-break" style="background:#fef9e7;border-color:#f39c12;color:#9a7b0a;"><strong>⚠ Polygon Force Closed</strong><br>Final point adjusted to close the traverse.</div>`
-            : `<div class="print-closed-status no-break"><strong>✓ Polygon is Closed</strong></div>`;
+          closureStatus = 'Closed';
+          closureHtml = `<div class="print-closed-status no-break"><strong>✓ Polygon is Closed</strong></div>`;
         }
 
         // Tolerance warning
@@ -1753,6 +1734,50 @@
 
       document.getElementById('addSegmentBtn').addEventListener('click', () => {
         addSegmentRow();
+        triggerLiveUpdate();
+      });
+
+      document.getElementById('addMisclosureBtn').addEventListener('click', () => {
+        // Parse current segments to calculate misclosure
+        const segments = parseSegmentsPermissive();
+        if (segments.length < 2) {
+          alert('Need at least 2 valid segments to calculate closing line.');
+          return;
+        }
+
+        const points = computeCoordinates(segments);
+        const misclosure = computeMisclosure(points);
+
+        if (!misclosure) {
+          alert('Polygon is already closed!');
+          return;
+        }
+
+        // The misclosure gives us the bearing and distance needed to close
+        const closingBearing = misclosure.bearing;
+        const closingLength = misclosure.length_m;
+
+        // Convert bearing to current format
+        const bt = getBearingType();
+        let bearingVals;
+        if (bt === 'Grads') {
+          bearingVals = { grads: (closingBearing / GRADS_TO_DEGREES).toFixed(4) };
+        } else if (bt === 'Quadrant') {
+          bearingVals = decimalToQuadrantFields(closingBearing);
+        } else if (bt === 'Internal' || bt === 'Deflection') {
+          // For internal/deflection, just use DMS - user will need to adjust
+          alert('Closing line added with absolute bearing. Adjust for your angle mode if needed.');
+          bearingVals = decimalToDMSFields(closingBearing);
+        } else {
+          bearingVals = decimalToDMSFields(closingBearing);
+        }
+
+        // Convert length to current unit
+        const unit = getInputUnit();
+        const lengthVals = metresToLengthFields(closingLength, unit);
+
+        // Add the closing segment
+        addSegmentRow(bearingVals, lengthVals, '', '');
         triggerLiveUpdate();
       });
 
