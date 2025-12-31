@@ -624,7 +624,8 @@
         const first = points[0], last = points[points.length - 1];
         const dx = first.x - last.x, dy = first.y - last.y;
         const len = Math.hypot(dx, dy);
-        if (len < TOLERANCE) return null;
+        // Treat anything under 0.1mm as closed (accounts for floating point precision)
+        if (len < 0.0001) return null;
         return { length_m: len, bearing: normalizeBearing(Math.atan2(dx, dy) * 180 / Math.PI) };
       }
 
@@ -823,7 +824,7 @@
       // DATA PERSISTENCE
       // ============================================
 
-      const STORAGE_KEY = 'areaCalc_savedData';
+      const STORAGE_KEY = 'areaCalc_savedData_v3';
 
       function collectAllData() {
         const rows = Array.from(segmentsTableBody.querySelectorAll('tr'));
