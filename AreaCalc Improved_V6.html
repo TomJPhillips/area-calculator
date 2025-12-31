@@ -805,6 +805,12 @@
       }
 
       // ============================================
+      // UI: Segment Table
+      // ============================================
+
+      const segmentsTableBody = document.querySelector('#segmentsTable tbody');
+
+      // ============================================
       // DATA PERSISTENCE
       // ============================================
 
@@ -861,39 +867,48 @@
       }
 
       function restoreData(data) {
-        if (!data || !data.segments) return false;
-
-        // Restore settings
-        if (data.settings) {
-          document.getElementById('bearingType').value = data.settings.bearingType || 'WholeCircle';
-          document.getElementById('inputUnit').value = data.settings.inputUnit || 'Metres';
-          document.getElementById('angleInputMode').value = data.settings.angleInputMode || 'Absolute';
-          document.getElementById('lengthType').value = data.settings.lengthType || 'chord';
-          document.getElementById('closureTolerance').value = data.settings.closureTolerance || '10000';
-          document.getElementById('forceClose').checked = data.settings.forceClose || false;
+        if (!data || !data.segments || !Array.isArray(data.segments) || data.segments.length === 0) {
+          localStorage.removeItem(STORAGE_KEY);
+          return false;
         }
 
-        // Restore starting bearing
-        if (data.startingBearing) {
-          document.getElementById('startBearingDeg').value = data.startingBearing.deg || 0;
-          document.getElementById('startBearingMin').value = data.startingBearing.min || 0;
-          document.getElementById('startBearingSec').value = data.startingBearing.sec || 0;
-        }
+        try {
+          // Restore settings
+          if (data.settings) {
+            document.getElementById('bearingType').value = data.settings.bearingType || 'WholeCircle';
+            document.getElementById('inputUnit').value = data.settings.inputUnit || 'Metres';
+            document.getElementById('angleInputMode').value = data.settings.angleInputMode || 'Absolute';
+            document.getElementById('lengthType').value = data.settings.lengthType || 'chord';
+            document.getElementById('closureTolerance').value = data.settings.closureTolerance || '10000';
+            document.getElementById('forceClose').checked = data.settings.forceClose || false;
+          }
 
-        // Restore description
-        if (data.description) {
-          document.getElementById('planDescription').value = data.description;
-        }
+          // Restore starting bearing
+          if (data.startingBearing) {
+            document.getElementById('startBearingDeg').value = data.startingBearing.deg || 0;
+            document.getElementById('startBearingMin').value = data.startingBearing.min || 0;
+            document.getElementById('startBearingSec').value = data.startingBearing.sec || 0;
+          }
 
-        // Restore segments
-        updateHeaders();
-        clearSegmentsTable();
-        for (const seg of data.segments) {
-          addSegmentRow(seg.bearing, seg.length, seg.radius || '', seg.curve || '');
-        }
+          // Restore description
+          if (data.description) {
+            document.getElementById('planDescription').value = data.description;
+          }
 
-        liveUpdateDiagram();
-        return true;
+          // Restore segments
+          updateHeaders();
+          clearSegmentsTable();
+          for (const seg of data.segments) {
+            addSegmentRow(seg.bearing, seg.length, seg.radius || '', seg.curve || '');
+          }
+
+          liveUpdateDiagram();
+          return true;
+        } catch (e) {
+          console.error('Error restoring data:', e);
+          localStorage.removeItem(STORAGE_KEY);
+          return false;
+        }
       }
 
       function exportToJson() {
@@ -924,12 +939,6 @@
         };
         reader.readAsText(file);
       }
-
-      // ============================================
-      // UI: Segment Table
-      // ============================================
-
-      const segmentsTableBody = document.querySelector('#segmentsTable tbody');
 
       function clearSegmentsTable() { segmentsTableBody.innerHTML = ''; }
 
