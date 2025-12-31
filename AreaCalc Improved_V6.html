@@ -2002,6 +2002,8 @@
           updateHeaders();
           document.getElementById('setSegmentsBtn').click();
         }
+        // Generate initial report so Print works immediately
+        setTimeout(autoRecalculate, 100);
       };
 
     })();
