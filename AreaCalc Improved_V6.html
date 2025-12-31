@@ -228,18 +228,60 @@
     .print-footer { margin-top: 25px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 0.8em; color: #7f8c8d; }
     .print-footer-content { display: flex; justify-content: space-between; }
 
+    .help-section {
+      background: #e8f4f8;
+      border: 1px solid #3498db;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .help-toggle {
+      width: 100%;
+      padding: 12px 20px;
+      background: #3498db;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .help-toggle:hover { background: #2980b9; }
+    .help-toggle .arrow { transition: transform 0.3s; }
+    .help-toggle.open .arrow { transform: rotate(180deg); }
+    .help-content {
+      display: none;
+      padding: 20px;
+      font-size: 0.9em;
+      line-height: 1.6;
+    }
+    .help-content.open { display: block; }
+    .help-content h4 { color: #2c3e50; margin: 15px 0 8px 0; border-bottom: 1px solid #bce0ee; padding-bottom: 5px; }
+    .help-content h4:first-child { margin-top: 0; }
+    .help-content dl { margin: 0; }
+    .help-content dt { font-weight: 600; color: #2c3e50; margin-top: 10px; }
+    .help-content dd { margin: 3px 0 10px 15px; color: #555; }
+    .help-content ul { margin: 5px 0; padding-left: 20px; }
+    .help-content li { margin: 5px 0; }
+    .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .help-grid { grid-template-columns: 1fr; } }
+
     @media print {
-      @page { size: A4; margin: 15mm; }
+      @page { size: A4; margin: 20mm 15mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
       body { margin: 0; padding: 0; background: #fff !important; font-size: 10pt; }
       .container { width: 100%; max-width: none; margin: 0; padding: 0; box-shadow: none; }
-      header, .controls, .segments, .diagram, .beta-note { display: none !important; }
-      .results { border: none; margin: 0; padding: 0; background: #fff; }
+      header, .controls, .segments, .diagram, .beta-note, .help-section { display: none !important; }
+      .results { border: none; margin: 0; padding: 10mm; background: #fff; }
       .report textarea, .report button, .report h3:first-of-type { display: none !important; }
+      #resultsDisplay { padding: 0 5mm; }
       #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 10pt 0; font-size: 8pt; page-break-inside: avoid; }
       #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 6pt 4pt; }
       #resultsDisplay table td { padding: 5pt; border: 0.5pt solid #ddd; }
-      .print-summary-box { background: #f8f9fa !important; page-break-inside: avoid; }
+      .print-summary-box { background: #f8f9fa !important; page-break-inside: avoid; margin: 10pt 0; }
+      .print-diagram-section img { max-width: 90%; }
       .no-break { page-break-inside: avoid; }
     }
   </style>
@@ -250,6 +292,74 @@
       <h1>Area Calculator</h1>
       <p class="beta-note">Survey polygon area with curve support</p>
     </header>
+
+    <div class="help-section">
+      <button class="help-toggle" id="helpToggle">
+        <span>📖 Help & Guide for New Users</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="help-content" id="helpContent">
+        <div class="help-grid">
+          <div>
+            <h4>Quick Start</h4>
+            <ol>
+              <li><strong>Enter your segments</strong> - Input the bearing (direction) and length for each boundary line from your title plan</li>
+              <li><strong>Watch the diagram</strong> - It updates live as you type so you can see the shape forming</li>
+              <li><strong>Check closure</strong> - A closed polygon means your traverse returns to the starting point</li>
+              <li><strong>Review results</strong> - Area, perimeter, and accuracy are calculated automatically</li>
+              <li><strong>Print/Save</strong> - Use the Print button to create a PDF report</li>
+            </ol>
+
+            <h4>Controls Explained</h4>
+            <dl>
+              <dt>Distance Unit</dt>
+              <dd>Choose the unit your title plan uses: Metres, Decimal Feet, Feet/Inches, or Links (historic unit, 1 link = 0.201168m)</dd>
+
+              <dt>Bearing Type</dt>
+              <dd><strong>Whole Circle (D/M/S)</strong> - Degrees from North clockwise (0-360°), e.g., 90° = East<br>
+              <strong>Quadrant</strong> - Traditional format like N45°E (North, turn 45° toward East)<br>
+              <strong>Internal Angles</strong> - Angles inside the polygon at each corner<br>
+              <strong>Deflection</strong> - Turn angles from the previous line direction</dd>
+
+              <dt>Chord vs Arc</dt>
+              <dd>For curved boundaries: <strong>Chord</strong> = straight line distance between curve endpoints; <strong>Arc</strong> = distance along the curve itself</dd>
+            </dl>
+          </div>
+
+          <div>
+            <h4>Segment Table Columns</h4>
+            <dl>
+              <dt>Bearing</dt>
+              <dd>The direction of travel for this segment. Enter in D° M' S" format (degrees, minutes, seconds)</dd>
+
+              <dt>Length/Chord</dt>
+              <dd>The distance for this segment. For curves, this is the chord (straight line) length</dd>
+
+              <dt>Radius</dt>
+              <dd>For curved boundaries only. Leave blank for straight lines. Enter the arc radius in metres</dd>
+
+              <dt>Curve (L/R)</dt>
+              <dd>For curves: <strong>L</strong> = arc bulges Left of the travel direction; <strong>R</strong> = arc bulges Right</dd>
+
+              <dt>Flip (↔)</dt>
+              <dd>Reverses the bearing by 180° - useful if you entered a direction backwards</dd>
+            </dl>
+
+            <h4>Results Explained</h4>
+            <dl>
+              <dt>Misclosure</dt>
+              <dd>The gap between the end point and start point. Zero (or very small) means the polygon closes properly</dd>
+
+              <dt>Accuracy Ratio</dt>
+              <dd>Quality measure like "1:10,000" - means 1 unit of error per 10,000 units travelled. Higher is better. Survey standards typically require at least 1:5,000</dd>
+
+              <dt>Add Closing Line</dt>
+              <dd>Calculates and adds a segment to close any gap in your traverse</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div class="controls">
       <label for="inputUnit">Distance:</label>
@@ -1843,6 +1953,14 @@
       });
 
       document.getElementById('printPreviewBtn').addEventListener('click', () => window.print());
+
+      // Help toggle
+      document.getElementById('helpToggle').addEventListener('click', () => {
+        const toggle = document.getElementById('helpToggle');
+        const content = document.getElementById('helpContent');
+        toggle.classList.toggle('open');
+        content.classList.toggle('open');
+      });
 
       // Data persistence buttons
       document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
