@@ -1317,8 +1317,38 @@
       function triggerLiveUpdate() {
         debounce(() => {
           liveUpdateDiagram();
+          autoRecalculate();
           saveToLocalStorage();
         }, 150);
+      }
+
+      function autoRecalculate() {
+        // Silent recalculate using permissive parsing (no error highlighting)
+        const segments = parseSegmentsPermissive();
+        if (segments.length < 3) return; // Need at least 3 valid segments
+
+        const points = computeCoordinates(segments);
+        const perimeter = computePerimeterWithArcs(segments);
+        const misclosure = computeMisclosure(points);
+
+        const toleranceLimit = parseInt(document.getElementById('closureTolerance').value);
+        let toleranceWarning = null;
+
+        if (misclosure && toleranceLimit > 0) {
+          const actualRatio = perimeter / misclosure.length_m;
+          if (actualRatio < toleranceLimit) {
+            toleranceWarning = {
+              expected: `1:${toleranceLimit.toLocaleString()}`,
+              actual: `1:${Math.round(actualRatio).toLocaleString()}`,
+              misclosure: misclosure.length_m
+            };
+          }
+        }
+
+        const area = computeAreaWithArcs(points, segments);
+        const resDiv = document.getElementById('resultsDisplay');
+        // Simplified report without audit trail for live updates
+        resDiv.innerHTML = generateReport(area, perimeter, misclosure, segments, [], toleranceWarning);
       }
 
       // ============================================
