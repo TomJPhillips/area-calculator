@@ -277,12 +277,15 @@
       .results { border: none; margin: 0; padding: 10mm; background: #fff; }
       .report textarea, .report button, .report h3:first-of-type { display: none !important; }
       #resultsDisplay { padding: 0 5mm; }
+      #resultsDisplay h3 { margin-top: 15pt; page-break-after: avoid; }
       #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 10pt 0; font-size: 8pt; page-break-inside: avoid; }
       #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 6pt 4pt; }
       #resultsDisplay table td { padding: 5pt; border: 0.5pt solid #ddd; }
       .print-summary-box { background: #f8f9fa !important; page-break-inside: avoid; margin: 10pt 0; }
+      .print-diagram-section { page-break-inside: avoid; page-break-after: auto; }
       .print-diagram-section img { max-width: 90%; }
-      .no-break { page-break-inside: avoid; }
+      .print-two-column { page-break-before: auto; margin-top: 10pt; }
+      .no-break { page-break-inside: avoid; page-break-after: auto; }
     }
   </style>
 </head>
@@ -407,8 +410,8 @@
       </span>
 
       <br><br>
-      <button id="exportJsonBtn">Export JSON</button>
-      <button id="importJsonBtn">Import JSON</button>
+      <button id="exportJsonBtn">Export Data</button>
+      <button id="importJsonBtn">Import Data</button>
       <input type="file" id="importFileInput" accept=".json" style="display:none;">
       <button id="clearStorageBtn" style="background:#e67e22;">Clear Saved</button>
     </div>
@@ -934,7 +937,7 @@
       // DATA PERSISTENCE
       // ============================================
 
-      const STORAGE_KEY = 'areaCalc_savedData_v3';
+      const STORAGE_KEY = 'areaCalc_savedData_v4';
 
       function collectAllData() {
         const rows = Array.from(segmentsTableBody.querySelectorAll('tr'));
