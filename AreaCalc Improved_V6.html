@@ -398,16 +398,18 @@
       .results { border: none; margin: 0; padding: 10mm; background: #fff; }
       .report textarea, .report button, .report h3:first-of-type { display: none !important; }
       #resultsDisplay { padding: 0 5mm; }
-      #resultsDisplay h3 { margin-top: 15pt; page-break-after: avoid; }
-      .traverse-schedule-heading { page-break-before: always; padding-top: 0; }
-      #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 10pt 0; font-size: 8pt; page-break-inside: avoid; }
-      #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 6pt 4pt; }
-      #resultsDisplay table td { padding: 5pt; border: 0.5pt solid #ddd; }
-      .print-summary-box { background: #f8f9fa !important; page-break-inside: avoid; margin: 10pt 0; }
-      .print-diagram-section { page-break-inside: avoid; page-break-after: auto; }
-      .print-diagram-section img { max-width: 90%; }
-      .print-two-column { page-break-before: auto; margin-top: 10pt; }
-      .no-break { page-break-inside: avoid; page-break-after: auto; }
+      #resultsDisplay h3 { margin-top: 12pt; margin-bottom: 8pt; page-break-after: avoid; }
+      .traverse-schedule-heading { margin-top: 15pt; }
+      #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 8pt 0; font-size: 8pt; }
+      #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 5pt 4pt; }
+      #resultsDisplay table td { padding: 4pt; border: 0.5pt solid #ddd; }
+      .print-summary-box { background: #f8f9fa !important; page-break-inside: avoid; margin: 8pt 0; padding: 10px; }
+      .print-diagram-section { page-break-inside: avoid; margin: 10pt 0; }
+      .print-diagram-section img { max-width: 85%; max-height: 280px; }
+      .print-two-column { margin-top: 8pt; }
+      .print-two-column ul { margin: 5pt 0; padding-left: 20pt; }
+      .print-closed-status, .warning-box, .error-box { margin: 8pt 0; padding: 8pt 12pt; }
+      .no-break { page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -2462,6 +2464,8 @@ Exported from Area Calculator</description>
           document.getElementById('planDescription').value = '';
           document.getElementById('startLat').value = '';
           document.getElementById('startLng').value = '';
+          // Clear the results display
+          document.getElementById('resultsDisplay').innerHTML = '<p style="color: #7f8c8d; font-style: italic;">Enter segment data above to calculate area.</p>';
           triggerLiveUpdate();
         }
       }
