@@ -1394,7 +1394,13 @@
         bh.textContent = bt === 'Grads' ? 'Bearing (Grads)' : bt === 'Quadrant' ? 'Bearing (Quadrant)' : bt === 'Internal' ? 'Internal Angle' : bt === 'Deflection' ? 'Deflection' : 'Bearing (D/M/S)';
 
         const lh = document.getElementById('lengthHeader');
-        lh.textContent = unit === 'DecimalFeet' ? 'Length/Chord (ft)' : unit === 'FeetInches' ? 'Length/Chord (ft/in)' : unit === 'Links' ? 'Length/Chord (lk)' : 'Length/Chord (m)';
+        const lengthSelect = document.getElementById('lengthType');
+        const savedValue = lengthSelect ? lengthSelect.value : 'chord';
+        const labelText = unit === 'DecimalFeet' ? 'Length/Chord (ft) ' : unit === 'FeetInches' ? 'Length/Chord (ft/in) ' : unit === 'Links' ? 'Length/Chord (lk) ' : 'Length/Chord (m) ';
+        // Recreate the select element since textContent would destroy it
+        lh.innerHTML = labelText + '<select id="lengthType" style="font-size:0.75em;margin-left:5px;"><option value="chord">Chord</option><option value="arc">Arc</option></select>';
+        document.getElementById('lengthType').value = savedValue;
+        document.getElementById('lengthType').addEventListener('change', triggerLiveUpdate);
 
         const sr = document.getElementById('startingBearingRow');
         sr.classList.toggle('visible', bt === 'Internal' || bt === 'Deflection');
