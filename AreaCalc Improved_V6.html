@@ -406,11 +406,22 @@
       function decimalToDMSFields(decimal) {
         const sign = decimal < 0 ? -1 : 1;
         const abs = Math.abs(decimal);
-        const deg = Math.floor(abs);
-        const minFloat = (abs - deg) * 60;
-        const min = Math.floor(minFloat);
-        const sec = (minFloat - min) * 60;
-        return { deg: sign * deg, min, sec: parseFloat(sec.toFixed(1)) };
+        let deg = Math.floor(abs);
+        let minFloat = (abs - deg) * 60;
+        let min = Math.floor(minFloat);
+        let sec = parseFloat(((minFloat - min) * 60).toFixed(1));
+
+        // Handle rollover from rounding
+        if (sec >= 60) {
+          sec = 0;
+          min++;
+        }
+        if (min >= 60) {
+          min = 0;
+          deg++;
+        }
+
+        return { deg: sign * deg, min, sec };
       }
 
       function quadrantFieldsToDecimal(ns, deg, min, sec, ew) {
