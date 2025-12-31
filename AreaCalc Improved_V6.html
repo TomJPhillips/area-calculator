@@ -81,7 +81,17 @@
       text-align: center;
       vertical-align: middle;
     }
-    th { background: #f0f0f0; font-size: 0.85em; }
+    th {
+      background: #2c3e50;
+      color: #fff;
+      font-size: 0.85em;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    #segmentsTable tbody tr:nth-child(odd) { background: #f9f9f9; }
+    #segmentsTable tbody tr:nth-child(even) { background: #fff; }
+    #segmentsTable tbody tr:hover { background: #e8f4f8; }
     canvas {
       display: block;
       margin: 0 auto;
@@ -268,6 +278,117 @@
     .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     @media (max-width: 800px) { .help-grid { grid-template-columns: 1fr; } }
 
+    .advanced-section {
+      margin-top: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: #f9f9f9;
+    }
+    .advanced-section summary {
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: #7f8c8d;
+      user-select: none;
+    }
+    .advanced-section summary:hover { color: #3498db; }
+    .advanced-section[open] summary { border-bottom: 1px solid #ddd; color: #2c3e50; }
+    .advanced-content { padding: 10px 15px 15px 15px; }
+
+    .drag-handle {
+      cursor: grab;
+      color: #aaa;
+      font-size: 1.2em;
+      user-select: none;
+      padding: 0 5px;
+    }
+    .drag-handle:hover { color: #3498db; }
+    .drag-handle:active { cursor: grabbing; }
+    tr.dragging { opacity: 0.5; background: #e8f4f8; }
+    tr.drag-over { border-top: 3px solid #3498db; }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 1.1em;
+      margin: 10px 0;
+    }
+    .status-badge.closed {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(39, 174, 96, 0.3);
+    }
+    .status-badge.open {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: #fff;
+      box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+    }
+    .status-badge .icon { font-size: 1.3em; }
+
+    .control-group {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+    }
+    .control-group-title {
+      font-size: 0.8em;
+      font-weight: 600;
+      color: #7f8c8d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #eee;
+    }
+    .control-group label { margin-right: 5px; }
+    .control-group select, .control-group input { margin-right: 15px; }
+
+    .diagram-container {
+      position: relative;
+      text-align: center;
+    }
+    .scale-bar {
+      position: absolute;
+      bottom: 15px;
+      left: 20px;
+      background: rgba(255,255,255,0.9);
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8em;
+      color: #2c3e50;
+      border: 1px solid #ddd;
+    }
+
+    /* Responsive Layout */
+    @media (max-width: 1200px) {
+      .container { margin: 15px; padding: 15px; }
+    }
+    @media (max-width: 900px) {
+      .help-grid { grid-template-columns: 1fr; }
+      .control-group { padding: 10px; }
+      .field-group { flex-wrap: wrap; gap: 5px; }
+      .field-group input { width: 45px !important; }
+      .field-group input.deg-field { width: 50px !important; }
+      .field-group input.length-field { width: 60px !important; }
+      #diagramCanvas { width: 100% !important; height: auto !important; }
+    }
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8em; }
+      .controls, .segments, .diagram, .results { padding: 10px; }
+      table { font-size: 0.85em; }
+      th, td { padding: 4px 2px; }
+      .control-group label { display: block; margin-bottom: 5px; }
+      .control-group select, .control-group input { margin-bottom: 8px; }
+      button { padding: 8px 12px; font-size: 0.9em; }
+      .status-badge { padding: 8px 15px; font-size: 1em; }
+    }
+
     @media print {
       @page { size: A4; margin: 20mm 15mm; }
       * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
@@ -278,6 +399,7 @@
       .report textarea, .report button, .report h3:first-of-type { display: none !important; }
       #resultsDisplay { padding: 0 5mm; }
       #resultsDisplay h3 { margin-top: 15pt; page-break-after: avoid; }
+      .traverse-schedule-heading { page-break-before: always; padding-top: 0; }
       #resultsDisplay table { width: 100%; border-collapse: collapse; margin: 10pt 0; font-size: 8pt; page-break-inside: avoid; }
       #resultsDisplay table th { background: #2c3e50 !important; color: #fff !important; padding: 6pt 4pt; }
       #resultsDisplay table td { padding: 5pt; border: 0.5pt solid #ddd; }
@@ -359,61 +481,127 @@
               <dt>Add Closing Line</dt>
               <dd>Calculates and adds a segment to close any gap in your traverse</dd>
             </dl>
+
+            <h4>Export to Google My Maps (KML)</h4>
+            <dl>
+              <dt>What is KML?</dt>
+              <dd>KML (Keyhole Markup Language) is a file format used by Google Maps and Google Earth to display geographic data. You can import your polygon to see it overlaid on aerial imagery.</dd>
+
+              <dt>How to get the starting point coordinates</dt>
+              <dd>
+                <ol>
+                  <li>Open <a href="https://www.google.com/maps" target="_blank">Google Maps</a> in your browser</li>
+                  <li>Navigate to the location of your first survey point (corner 1 of your property)</li>
+                  <li>Right-click on the exact spot</li>
+                  <li>Click the coordinates that appear at the top of the menu (e.g., "-36.8485, 174.7633") - this copies them</li>
+                  <li>Paste into the Lat and Long fields (you may need to separate them)</li>
+                </ol>
+              </dd>
+
+              <dt>How to import into Google My Maps</dt>
+              <dd>
+                <ol>
+                  <li>Click "Export KML" to download the .kml file</li>
+                  <li>Go to <a href="https://www.google.com/mymaps" target="_blank">Google My Maps</a></li>
+                  <li>Create a new map or open an existing one</li>
+                  <li>Click "Import" in the left panel</li>
+                  <li>Select your .kml file</li>
+                  <li>Your polygon will appear on the map with aerial/satellite imagery!</li>
+                </ol>
+              </dd>
+
+              <dt>Important notes</dt>
+              <dd>
+                <ul>
+                  <li>This assumes your survey bearings are based on true north. If using magnetic north, there may be a small rotation error.</li>
+                  <li>The conversion uses a flat-earth approximation which is accurate for typical property sizes.</li>
+                  <li>For best results, ensure your polygon is closed before exporting.</li>
+                </ul>
+              </dd>
+            </dl>
           </div>
         </div>
       </div>
     </div>
 
     <div class="controls">
-      <label for="inputUnit">Distance:</label>
-      <select id="inputUnit">
-        <option value="Metres" selected>Metres</option>
-        <option value="DecimalFeet">Decimal Feet</option>
-        <option value="FeetInches">Feet/Inches</option>
-        <option value="Links">Links</option>
-      </select>
+      <div style="display:flex;flex-wrap:wrap;gap:15px;">
+        <div class="control-group" style="flex:1;min-width:280px;">
+          <div class="control-group-title">Units & Format</div>
+          <label for="inputUnit">Distance:</label>
+          <select id="inputUnit">
+            <option value="Metres" selected>Metres</option>
+            <option value="DecimalFeet">Decimal Feet</option>
+            <option value="FeetInches">Feet/Inches</option>
+            <option value="Links">Links</option>
+          </select>
+          <br><br>
+          <label for="bearingType">Bearing:</label>
+          <select id="bearingType">
+            <option value="WholeCircle" selected>Whole Circle (D/M/S)</option>
+            <option value="DecimalDegrees">Decimal Degrees</option>
+            <option value="Quadrant">Quadrant</option>
+            <option value="Internal">Internal Angles</option>
+            <option value="Deflection">Deflection Angles</option>
+            <option value="Grads">Grads</option>
+          </select>
+          <br><br>
+          <label for="angleInputMode">Mode:</label>
+          <select id="angleInputMode">
+            <option value="Absolute" selected>Absolute</option>
+            <option value="Relative">Relative</option>
+          </select>
+        </div>
 
-      <label for="bearingType">Bearing:</label>
-      <select id="bearingType">
-        <option value="WholeCircle" selected>Whole Circle (D/M/S)</option>
-        <option value="DecimalDegrees">Decimal Degrees</option>
-        <option value="Quadrant">Quadrant</option>
-        <option value="Internal">Internal Angles</option>
-        <option value="Deflection">Deflection Angles</option>
-        <option value="Grads">Grads</option>
-      </select>
+        <div class="control-group" style="flex:1;min-width:280px;">
+          <div class="control-group-title">Segments & Closure</div>
+          <label for="numSegments"># Segments:</label>
+          <input type="number" id="numSegments" value="4" min="3" max="100" style="width:60px;">
+          <button id="setSegmentsBtn">Set</button>
+          <br><br>
+          <label for="closureTolerance">Tolerance:</label>
+          <select id="closureTolerance">
+            <option value="5000">1:5,000 (Cadastral)</option>
+            <option value="10000" selected>1:10,000 (Standard)</option>
+            <option value="15000">1:15,000 (High)</option>
+            <option value="25000">1:25,000 (Very High)</option>
+            <option value="0">No limit</option>
+          </select>
+          <br><br>
+          <button id="addMisclosureBtn">Add Closing Line</button>
+          <span class="tooltip"><span class="help-icon">?</span>
+            <span class="tooltip-text">Adds a segment with the exact bearing and distance needed to close the polygon.</span>
+          </span>
+        </div>
 
-      <label for="angleInputMode">Mode:</label>
-      <select id="angleInputMode">
-        <option value="Absolute" selected>Absolute</option>
-        <option value="Relative">Relative</option>
-      </select>
+        <div class="control-group" style="flex:1;min-width:280px;">
+          <div class="control-group-title">Data Management</div>
+          <button id="exportJsonBtn">Export Data</button>
+          <button id="importJsonBtn">Import Data</button>
+          <button id="clearStorageBtn" style="background:#e67e22;">Clear Saved</button>
+          <input type="file" id="importFileInput" accept=".json" style="display:none;">
 
-      <br><br>
-      <label for="numSegments"># Segments:</label>
-      <input type="number" id="numSegments" value="4" min="3" max="100" style="width:60px;">
-      <button id="setSegmentsBtn">Set</button>
-      <button id="recalcBtn">Recalculate</button>
+          <details class="advanced-section" style="margin-top:12px;">
+            <summary>Export to Google Maps</summary>
+            <div class="advanced-content">
+              <p style="margin:5px 0;color:#7f8c8d;font-size:0.85em;">Export polygon to view on aerial imagery.</p>
+              <label>Lat:</label>
+              <input type="text" id="startLat" placeholder="-36.8485" style="width:85px;">
+              <label>Long:</label>
+              <input type="text" id="startLng" placeholder="174.7633" style="width:85px;">
+              <br><br>
+              <button id="exportKmlBtn" style="background:#27ae60;">Export KML</button>
+            </div>
+          </details>
+        </div>
+      </div>
 
-      <br><br>
-      <label for="closureTolerance">Closure Tolerance:</label>
-      <select id="closureTolerance">
-        <option value="5000">1:5,000 (Cadastral)</option>
-        <option value="10000" selected>1:10,000 (Standard)</option>
-        <option value="15000">1:15,000 (High)</option>
-        <option value="25000">1:25,000 (Very High)</option>
-        <option value="0">No limit</option>
-      </select>
-      <button id="addMisclosureBtn" style="margin-left:15px;">Add Closing Line</button>
-      <span class="tooltip"><span class="help-icon">?</span>
-        <span class="tooltip-text">Adds a segment with the exact bearing and distance needed to close the polygon.</span>
-      </span>
-
-      <br><br>
-      <button id="exportJsonBtn">Export Data</button>
-      <button id="importJsonBtn">Import Data</button>
-      <input type="file" id="importFileInput" accept=".json" style="display:none;">
-      <button id="clearStorageBtn" style="background:#e67e22;">Clear Saved</button>
+      <div id="statusBadgeContainer" style="text-align:center;margin-top:15px;">
+        <div class="status-badge closed" id="statusBadge">
+          <span class="icon">✓</span>
+          <span id="statusText">Polygon Closed</span>
+        </div>
+      </div>
     </div>
 
     <div class="segments">
@@ -436,6 +624,7 @@
       <table id="segmentsTable">
         <thead>
           <tr>
+            <th style="width:30px;"></th>
             <th style="width:35px;">No.</th>
             <th id="bearingHeader">Bearing (D/M/S)</th>
             <th id="lengthHeader">Length (Chord)
@@ -466,7 +655,10 @@
 
     <div class="diagram">
       <h3>Survey Diagram</h3>
-      <canvas id="diagramCanvas" width="500" height="500"></canvas>
+      <div class="diagram-container">
+        <canvas id="diagramCanvas" width="650" height="550"></canvas>
+        <div class="scale-bar" id="scaleBar">Scale: --</div>
+      </div>
     </div>
 
     <div class="results">
@@ -737,8 +929,8 @@
         const first = points[0], last = points[points.length - 1];
         const dx = first.x - last.x, dy = first.y - last.y;
         const len = Math.hypot(dx, dy);
-        // Treat anything under 0.1mm as closed (accounts for floating point precision)
-        if (len < 0.0001) return null;
+        // Treat anything under 1mm as closed (accounts for D/M/S rounding)
+        if (len < 0.001) return null;
         return { length_m: len, bearing: normalizeBearing(Math.atan2(dx, dy) * 180 / Math.PI) };
       }
 
@@ -769,11 +961,34 @@
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Draw grid background
+        ctx.fillStyle = '#fafafa';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#e8e8e8';
+        ctx.lineWidth = 1;
+        const gridSize = 25;
+        for (let x = 0; x <= canvas.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, canvas.height);
+          ctx.stroke();
+        }
+        for (let y = 0; y <= canvas.height; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(canvas.width, y);
+          ctx.stroke();
+        }
+
+        // Update status badge
+        updateStatusBadge(misclosure);
+
         if (points.length < 2) {
           ctx.fillStyle = '#7f8c8d';
           ctx.font = '14px Roboto';
           ctx.textAlign = 'center';
           ctx.fillText('Not enough points', canvas.width / 2, canvas.height / 2);
+          document.getElementById('scaleBar').textContent = 'Scale: --';
           return;
         }
 
@@ -781,11 +996,14 @@
         const minX = Math.min(...xs), maxX = Math.max(...xs);
         const minY = Math.min(...ys), maxY = Math.max(...ys);
 
-        const padding = 50;
+        const padding = 60;
         const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
         const scale = Math.min((canvas.width - 2 * padding) / rangeX, (canvas.height - 2 * padding) / rangeY);
         const offsetX = (canvas.width - rangeX * scale) / 2 - minX * scale;
         const offsetY = (canvas.height - rangeY * scale) / 2 + maxY * scale;
+
+        // Update scale bar
+        updateScaleBar(scale);
 
         const toCanvas = p => ({ x: p.x * scale + offsetX, y: -p.y * scale + offsetY });
         const cPoints = points.map(toCanvas);
@@ -839,17 +1057,32 @@
           ctx.fill();
         }
 
-        // Segment labels
-        ctx.fillStyle = '#2980b9';
-        ctx.font = 'bold 12px Roboto';
+        // Segment labels with dimensions
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        for (let i = 0; i < cPoints.length - 1; i++) {
+        for (let i = 0; i < cPoints.length - 1 && i < segments.length; i++) {
           const p0 = cPoints[i], p1 = cPoints[i + 1];
+          const seg = segments[i];
           const midX = (p0.x + p1.x) / 2, midY = (p0.y + p1.y) / 2;
           const dx = p1.x - p0.x, dy = p1.y - p0.y;
-          const len = Math.hypot(dx, dy) || 1;
-          ctx.fillText((i + 1).toString(), midX - dy / len * 15, midY + dx / len * 15);
+          const segLen = Math.hypot(dx, dy) || 1;
+
+          // Offset perpendicular to segment
+          const offsetX = -dy / segLen * 18;
+          const offsetY = dx / segLen * 18;
+
+          // Segment number (on one side)
+          ctx.fillStyle = '#2980b9';
+          ctx.font = 'bold 12px Roboto';
+          ctx.fillText((i + 1).toString(), midX + offsetX, midY + offsetY);
+
+          // Bearing and length (on other side)
+          ctx.fillStyle = '#555';
+          ctx.font = '10px Roboto';
+          const bearingStr = seg.bearing.toFixed(1) + '°';
+          const lengthStr = seg.chord.toFixed(2) + 'm';
+          ctx.fillText(bearingStr, midX - offsetX, midY - offsetY - 6);
+          ctx.fillText(lengthStr, midX - offsetX, midY - offsetY + 6);
         }
 
         // North arrow
@@ -928,6 +1161,48 @@
       }
 
       // ============================================
+      // SCALE BAR & STATUS BADGE
+      // ============================================
+
+      function updateScaleBar(pixelsPerMetre) {
+        const scaleBar = document.getElementById('scaleBar');
+        if (!scaleBar) return;
+
+        // Calculate a nice round scale value
+        const metresPerPixel = 1 / pixelsPerMetre;
+        const targetBarWidth = 80; // pixels
+        const targetMetres = targetBarWidth * metresPerPixel;
+
+        // Round to a nice value
+        let niceMetres;
+        if (targetMetres >= 100) niceMetres = Math.round(targetMetres / 50) * 50;
+        else if (targetMetres >= 10) niceMetres = Math.round(targetMetres / 5) * 5;
+        else if (targetMetres >= 1) niceMetres = Math.round(targetMetres);
+        else niceMetres = Math.round(targetMetres * 10) / 10;
+
+        if (niceMetres < 0.1) niceMetres = 0.1;
+
+        const barWidth = niceMetres * pixelsPerMetre;
+        scaleBar.innerHTML = `<span style="display:inline-block;width:${barWidth}px;height:4px;background:#2c3e50;margin-right:8px;vertical-align:middle;"></span>${niceMetres}m`;
+      }
+
+      function updateStatusBadge(misclosure) {
+        const badge = document.getElementById('statusBadge');
+        const text = document.getElementById('statusText');
+        if (!badge || !text) return;
+
+        if (misclosure) {
+          badge.className = 'status-badge open';
+          badge.querySelector('.icon').textContent = '✗';
+          text.textContent = `Open: ${misclosure.length_m.toFixed(3)}m gap`;
+        } else {
+          badge.className = 'status-badge closed';
+          badge.querySelector('.icon').textContent = '✓';
+          text.textContent = 'Polygon Closed';
+        }
+      }
+
+      // ============================================
       // UI: Segment Table
       // ============================================
 
@@ -961,6 +1236,10 @@
             deg: document.getElementById('startBearingDeg').value,
             min: document.getElementById('startBearingMin').value,
             sec: document.getElementById('startBearingSec').value
+          },
+          geoReference: {
+            lat: document.getElementById('startLat').value,
+            lng: document.getElementById('startLng').value
           },
           segments,
           description: document.getElementById('planDescription').value
@@ -1011,6 +1290,12 @@
             document.getElementById('startBearingSec').value = data.startingBearing.sec || 0;
           }
 
+          // Restore geo reference (for KML export)
+          if (data.geoReference) {
+            document.getElementById('startLat').value = data.geoReference.lat || '';
+            document.getElementById('startLng').value = data.geoReference.lng || '';
+          }
+
           // Restore description
           if (data.description) {
             document.getElementById('planDescription').value = data.description;
@@ -1059,6 +1344,119 @@
           }
         };
         reader.readAsText(file);
+      }
+
+      function exportToKml() {
+        const startLatStr = document.getElementById('startLat').value.trim();
+        const startLngStr = document.getElementById('startLng').value.trim();
+
+        if (!startLatStr || !startLngStr) {
+          alert('Please enter the starting point latitude and longitude.\n\nTo get coordinates: Right-click on your starting point in Google Maps and click the coordinates to copy them.');
+          return;
+        }
+
+        const startLat = parseFloat(startLatStr);
+        const startLng = parseFloat(startLngStr);
+
+        if (isNaN(startLat) || isNaN(startLng)) {
+          alert('Invalid coordinates. Please enter numeric values for latitude and longitude.');
+          return;
+        }
+
+        if (startLat < -90 || startLat > 90) {
+          alert('Latitude must be between -90 and 90.');
+          return;
+        }
+
+        if (startLng < -180 || startLng > 180) {
+          alert('Longitude must be between -180 and 180.');
+          return;
+        }
+
+        const segments = parseSegmentsPermissive();
+        if (segments.length < 3) {
+          alert('Need at least 3 valid segments to export a polygon.');
+          return;
+        }
+
+        const points = computeCoordinates(segments);
+        const misclosure = computeMisclosure(points);
+
+        if (misclosure && misclosure.length_m > 1) {
+          if (!confirm(`Warning: Polygon is not closed (misclosure: ${misclosure.length_m.toFixed(2)}m).\n\nThe KML will close the polygon automatically. Continue?`)) {
+            return;
+          }
+        }
+
+        // Convert local X/Y coordinates to lat/long
+        // X = east (affects longitude), Y = north (affects latitude)
+        // Approximation: 1 degree latitude ≈ 111,320 metres
+        // 1 degree longitude ≈ 111,320 * cos(latitude) metres
+        const METRES_PER_DEG_LAT = 111320;
+        const latRad = startLat * Math.PI / 180;
+        const metresPerDegLng = METRES_PER_DEG_LAT * Math.cos(latRad);
+
+        const kmlCoords = points.map(p => {
+          const lat = startLat + (p.y / METRES_PER_DEG_LAT);
+          const lng = startLng + (p.x / metresPerDegLng);
+          return `${lng.toFixed(8)},${lat.toFixed(8)},0`;
+        });
+
+        // Close the polygon by repeating the first point
+        if (kmlCoords.length > 0) {
+          kmlCoords.push(kmlCoords[0]);
+        }
+
+        const planDesc = document.getElementById('planDescription').value.trim() || 'Survey Polygon';
+        const areaM2 = computeAreaWithArcs(points, segments);
+        const areaHa = (areaM2 / 10000).toFixed(4);
+
+        const kml = `<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>${escapeXml(planDesc)}</name>
+    <description>Area: ${areaM2.toFixed(2)} m² (${areaHa} ha)
+Exported from Area Calculator</description>
+    <Style id="surveyPolygonStyle">
+      <LineStyle>
+        <color>ff0000ff</color>
+        <width>3</width>
+      </LineStyle>
+      <PolyStyle>
+        <color>4d0000ff</color>
+      </PolyStyle>
+    </Style>
+    <Placemark>
+      <name>${escapeXml(planDesc)}</name>
+      <description>Area: ${areaM2.toFixed(2)} m² (${areaHa} ha)</description>
+      <styleUrl>#surveyPolygonStyle</styleUrl>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              ${kmlCoords.join('\n              ')}
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>`;
+
+        const blob = new Blob([kml], { type: 'application/vnd.google-earth.kml+xml' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const filename = planDesc.replace(/[^a-z0-9]/gi, '_').substring(0, 30) || 'survey_polygon';
+        a.download = `${filename}.kml`;
+        a.click();
+      }
+
+      function escapeXml(str) {
+        return str.replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&apos;');
       }
 
       function clearSegmentsTable() { segmentsTableBody.innerHTML = ''; }
@@ -1220,8 +1618,25 @@
         const idx = segmentsTableBody.querySelectorAll('tr').length;
         const bt = getBearingType(), unit = getInputUnit();
         const row = document.createElement('tr');
+        row.draggable = true;
 
-        // Col 0: Number
+        // Col 0: Drag handle
+        const dragCell = document.createElement('td');
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'drag-handle';
+        dragHandle.textContent = '⋮⋮';
+        dragHandle.title = 'Drag to reorder';
+        dragCell.appendChild(dragHandle);
+        row.appendChild(dragCell);
+
+        // Drag events
+        row.addEventListener('dragstart', handleDragStart);
+        row.addEventListener('dragend', handleDragEnd);
+        row.addEventListener('dragover', handleDragOver);
+        row.addEventListener('dragleave', handleDragLeave);
+        row.addEventListener('drop', handleDrop);
+
+        // Col 1: Number
         row.appendChild(Object.assign(document.createElement('td'), { textContent: (idx + 1).toString() }));
 
         // Col 1: Bearing
@@ -1270,13 +1685,63 @@
 
       function updateSegmentNumbers() {
         segmentsTableBody.querySelectorAll('tr').forEach((row, i) => {
-          row.children[0].textContent = (i + 1).toString();
+          row.children[1].textContent = (i + 1).toString();
         });
       }
 
-      // Row accessors (column indices: 0=No, 1=Bearing, 2=Length, 3=Radius, 4=Curve, 5=Flip, 6=Del)
+      // ============================================
+      // DRAG AND DROP
+      // ============================================
+      let draggedRow = null;
+
+      function handleDragStart(e) {
+        draggedRow = this;
+        this.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      }
+
+      function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        segmentsTableBody.querySelectorAll('tr').forEach(row => {
+          row.classList.remove('drag-over');
+        });
+        draggedRow = null;
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (this !== draggedRow) {
+          this.classList.add('drag-over');
+        }
+      }
+
+      function handleDragLeave(e) {
+        this.classList.remove('drag-over');
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if (draggedRow && this !== draggedRow) {
+          const allRows = Array.from(segmentsTableBody.querySelectorAll('tr'));
+          const draggedIdx = allRows.indexOf(draggedRow);
+          const targetIdx = allRows.indexOf(this);
+
+          if (draggedIdx < targetIdx) {
+            this.parentNode.insertBefore(draggedRow, this.nextSibling);
+          } else {
+            this.parentNode.insertBefore(draggedRow, this);
+          }
+
+          updateSegmentNumbers();
+          triggerLiveUpdate();
+        }
+      }
+
+      // Row accessors (column indices: 0=Drag, 1=No, 2=Bearing, 3=Length, 4=Radius, 5=Curve, 6=Flip, 7=Del)
       function getBearingFromRow(row) {
-        const container = row.children[1].querySelector('.field-group');
+        const container = row.children[2].querySelector('.field-group');
         const bt = container.dataset.bearingType;
         const inputs = container.querySelectorAll('input');
         const selects = container.querySelectorAll('select');
@@ -1286,7 +1751,7 @@
       }
 
       function setBearingInRow(row, vals) {
-        const container = row.children[1].querySelector('.field-group');
+        const container = row.children[2].querySelector('.field-group');
         const bt = container.dataset.bearingType;
         const inputs = container.querySelectorAll('input');
         const selects = container.querySelectorAll('select');
@@ -1296,7 +1761,7 @@
       }
 
       function getLengthFromRow(row) {
-        const container = row.children[2].querySelector('.field-group');
+        const container = row.children[3].querySelector('.field-group');
         const inputs = container.querySelectorAll('input');
         const u = container.dataset.inputUnit;
         if (u === 'FeetInches') return { ft: inputs[0].value, in: inputs[1].value };
@@ -1305,11 +1770,11 @@
       }
 
       function getRadiusFromRow(row) {
-        return row.children[3].querySelector('input').value;
+        return row.children[4].querySelector('input').value;
       }
 
       function getCurveFromRow(row) {
-        return row.children[4].querySelector('select').value;
+        return row.children[5].querySelector('select').value;
       }
 
       // ============================================
@@ -1317,7 +1782,7 @@
       // ============================================
 
       function parseBearingFromRow(row) {
-        const container = row.children[1].querySelector('.field-group');
+        const container = row.children[2].querySelector('.field-group');
         const bt = container.dataset.bearingType;
         const inputs = container.querySelectorAll('input');
         const selects = container.querySelectorAll('select');
@@ -1331,7 +1796,7 @@
       }
 
       function parseLengthFromRow(row, radius = 0) {
-        const container = row.children[2].querySelector('.field-group');
+        const container = row.children[3].querySelector('.field-group');
         const inputs = container.querySelectorAll('input');
         const u = container.dataset.inputUnit;
         let lengthM;
@@ -1352,7 +1817,7 @@
 
       function getRawLengthFromRow(row) {
         // Get raw length value without arc-to-chord conversion (for audit trail)
-        const container = row.children[2].querySelector('.field-group');
+        const container = row.children[3].querySelector('.field-group');
         const inputs = container.querySelectorAll('input');
         const u = container.dataset.inputUnit;
         if (u === 'FeetInches') {
@@ -1469,7 +1934,7 @@
       // ============================================
 
       function flipSegment(row) {
-        const container = row.children[1].querySelector('.field-group');
+        const container = row.children[2].querySelector('.field-group');
         const bt = container.dataset.bearingType;
 
         if (bt === 'Internal') {
@@ -1509,7 +1974,7 @@
         const saved = rows.map(row => {
           let bearingDeg = null, lengthM = null;
           try {
-            const oldCont = row.children[1].querySelector('.field-group');
+            const oldCont = row.children[2].querySelector('.field-group');
             const oldBt = oldCont.dataset.bearingType;
             const inputs = oldCont.querySelectorAll('input');
             const selects = oldCont.querySelectorAll('select');
@@ -1571,10 +2036,10 @@
 
         // Clear errors
         rows.forEach(row => {
-          row.children[1].querySelectorAll('input').forEach(i => i.classList.remove('error'));
           row.children[2].querySelectorAll('input').forEach(i => i.classList.remove('error'));
-          row.children[3].querySelector('input').classList.remove('error');
-          row.children[4].querySelector('select').classList.remove('error');
+          row.children[3].querySelectorAll('input').forEach(i => i.classList.remove('error'));
+          row.children[4].querySelector('input').classList.remove('error');
+          row.children[5].querySelector('select').classList.remove('error');
         });
 
         if (rows.length < 3) errors.push('At least 3 segments required.');
@@ -1620,7 +2085,7 @@
               bearing = normalizeBearing(raw);
             }
           } catch (e) {
-            row.children[1].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
+            row.children[2].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
             errors.push(`Seg ${i + 1} bearing: ${e.message}`);
             valid = false;
           }
@@ -1633,7 +2098,7 @@
 
           try { chord = parseLengthFromRow(row, radius); }
           catch (e) {
-            row.children[2].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
+            row.children[3].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
             errors.push(`Seg ${i + 1} length: ${e.message}`);
             valid = false;
           }
@@ -1641,13 +2106,13 @@
           // Curve validation
           if (radius > 0) {
             if (!curveDir) {
-              row.children[4].querySelector('select').classList.add('error');
+              row.children[5].querySelector('select').classList.add('error');
               errors.push(`Seg ${i + 1}: Radius set but Curve direction (L/R) missing.`);
               valid = false;
             }
             if (valid && chord > 2 * radius + TOLERANCE) {
-              row.children[2].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
-              row.children[3].querySelector('input').classList.add('error');
+              row.children[3].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
+              row.children[4].querySelector('input').classList.add('error');
               const lenLabel = lengthType === 'arc' ? 'Arc' : 'Chord';
               errors.push(`Seg ${i + 1}: ${lenLabel} too long for radius (chord ${chord.toFixed(2)}m > diameter ${(2 * radius).toFixed(2)}m).`);
               valid = false;
@@ -1795,41 +2260,6 @@
 
         const curveNote = hasCurves ? '<p style="font-size:0.85em;color:#7f8c8d;">* Length column shows chord length for curve segments. Arc length shown separately.</p>' : '';
 
-        // Audit trail - raw input values
-        let auditHtml = '';
-        if (rawInputs.length > 0) {
-          const bt = rawInputs[0].bearingType;
-          const lt = rawInputs[0].lengthType;
-          const lu = rawInputs[0].lengthUnit;
-
-          let auditRows = '';
-          for (let i = 0; i < rawInputs.length; i++) {
-            const raw = rawInputs[i];
-            const rawBearingStr = formatRawBearing(raw.bearingInput, raw.bearingType);
-            const rawLenVal = raw.lengthInput;
-            const unitLabel = lu === 'FeetInches' ? 'ft/in' : lu === 'DecimalFeet' ? 'ft' : lu === 'Links' ? 'lk' : 'm';
-            const lenLabel = lt === 'arc' && raw.radius > 0 ? 'arc' : 'chord';
-            auditRows += `<tr>
-              <td>${i + 1}</td>
-              <td>${rawBearingStr}</td>
-              <td>${rawLenVal.toFixed(3)} ${unitLabel} (${lenLabel})</td>
-              <td>${raw.radius > 0 ? raw.radius.toFixed(2) + ' m' : '-'}</td>
-              <td>${raw.curveDir || '-'}</td>
-            </tr>`;
-          }
-
-          const bearingLabel = bt === 'Grads' ? 'Grads' : bt === 'Quadrant' ? 'Quadrant' : bt === 'Internal' ? 'Internal' : bt === 'Deflection' ? 'Deflection' : 'D/M/S';
-
-          auditHtml = `
-            <h3>Input Audit Trail</h3>
-            <p style="font-size:0.85em;color:#7f8c8d;">Raw values as entered (Bearing: ${bearingLabel}, Length: ${lt === 'arc' ? 'Arc' : 'Chord'} in ${lu})</p>
-            <table class="no-break" style="font-size:0.9em;">
-              <thead><tr><th>Seg</th><th>Bearing Input</th><th>Length Input</th><th>Radius</th><th>Curve</th></tr></thead>
-              <tbody>${auditRows}</tbody>
-            </table>
-          `;
-        }
-
         return `
           <div class="print-report-header"><h1>Area Calculation Report</h1><h2>Survey Traverse Analysis</h2></div>
           <div class="print-meta">Generated: ${dateStr}</div>
@@ -1862,13 +2292,12 @@
               <ul><li><strong>${perimVals.m}</strong></li><li>${perimVals.ft}</li><li>${perimVals.links}</li></ul>
             </div>
           </div>
-          <h3>Traverse Schedule</h3>
+          <h3 class="traverse-schedule-heading">Traverse Schedule</h3>
           <table class="no-break">
             <thead><tr><th>Seg</th><th>Bearing</th><th>DMS</th><th>Chord(m)</th><th>Chord(${unit})</th>${curveHeaders}</tr></thead>
             <tbody>${tableRows}</tbody>
           </table>
           ${curveNote}
-          ${auditHtml}
           <div class="print-footer"><div class="print-footer-content"><span>Area Calculator</span><span>Tom Phillips © ${new Date().getFullYear()}</span></div></div>
         `;
       }
@@ -1967,6 +2396,7 @@
 
       // Data persistence buttons
       document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
+      document.getElementById('exportKmlBtn').addEventListener('click', exportToKml);
 
       document.getElementById('importJsonBtn').addEventListener('click', () => {
         document.getElementById('importFileInput').click();
