@@ -281,6 +281,28 @@
       <input type="number" id="numSegments" value="4" min="3" max="100" style="width:60px;">
       <button id="setSegmentsBtn">Set</button>
       <button id="recalcBtn">Recalculate</button>
+
+      <br><br>
+      <label for="closureTolerance">Closure Tolerance:</label>
+      <select id="closureTolerance">
+        <option value="5000">1:5,000 (Cadastral)</option>
+        <option value="10000" selected>1:10,000 (Standard)</option>
+        <option value="15000">1:15,000 (High)</option>
+        <option value="25000">1:25,000 (Very High)</option>
+        <option value="0">No limit</option>
+      </select>
+      <label style="margin-left:15px;">
+        <input type="checkbox" id="forceClose"> Force close polygon
+        <span class="tooltip"><span class="help-icon">?</span>
+          <span class="tooltip-text">When enabled, automatically closes the polygon by adjusting the final point to the start. Use only when misclosure is within acceptable tolerance.</span>
+        </span>
+      </label>
+
+      <br><br>
+      <button id="exportJsonBtn">Export JSON</button>
+      <button id="importJsonBtn">Import JSON</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;">
+      <button id="clearStorageBtn" style="background:#e67e22;">Clear Saved</button>
     </div>
 
     <div class="segments">
@@ -305,7 +327,12 @@
           <tr>
             <th style="width:35px;">No.</th>
             <th id="bearingHeader">Bearing (D/M/S)</th>
-            <th id="lengthHeader">Length (Chord)</th>
+            <th id="lengthHeader">Length (Chord)
+              <select id="lengthType" style="font-size:0.75em;margin-left:5px;">
+                <option value="chord" selected>Chord</option>
+                <option value="arc">Arc</option>
+              </select>
+            </th>
             <th>Radius
               <span class="tooltip"><span class="help-icon">?</span>
                 <span class="tooltip-text">Arc radius in metres. Leave blank for straight segments.</span>
@@ -489,6 +516,23 @@
       function circularSegmentArea(chord, radius) {
         const theta = arcCentralAngle(chord, radius);
         return (radius * radius / 2) * (theta - Math.sin(theta));
+      }
+
+      /**
+       * Convert arc length to chord length
+       * Uses Newton-Raphson iteration: given s and R, find c where s = R * 2 * asin(c/(2R))
+       */
+      function arcLengthToChord(arcLen, radius) {
+        if (arcLen <= 0 || radius <= 0) return 0;
+        // theta = s / R
+        const theta = arcLen / radius;
+        if (theta >= Math.PI) throw new Error('Arc length exceeds semicircle');
+        // chord = 2R * sin(theta/2)
+        return 2 * radius * Math.sin(theta / 2);
+      }
+
+      function getLengthType() {
+        return document.getElementById('lengthType').value;
       }
 
       // ============================================
@@ -758,6 +802,127 @@
         ctx.beginPath();
         ctx.arc(cx, cy, scaledRadius, startAngle, endAngle, anticlockwise);
         ctx.stroke();
+      }
+
+      // ============================================
+      // DATA PERSISTENCE
+      // ============================================
+
+      const STORAGE_KEY = 'areaCalc_savedData';
+
+      function collectAllData() {
+        const rows = Array.from(segmentsTableBody.querySelectorAll('tr'));
+        const segments = rows.map(row => ({
+          bearing: getBearingFromRow(row),
+          length: getLengthFromRow(row),
+          radius: getRadiusFromRow(row),
+          curve: getCurveFromRow(row)
+        }));
+
+        return {
+          version: 2,
+          settings: {
+            bearingType: getBearingType(),
+            inputUnit: getInputUnit(),
+            angleInputMode: getAngleInputMode(),
+            lengthType: getLengthType(),
+            closureTolerance: document.getElementById('closureTolerance').value,
+            forceClose: document.getElementById('forceClose').checked
+          },
+          startingBearing: {
+            deg: document.getElementById('startBearingDeg').value,
+            min: document.getElementById('startBearingMin').value,
+            sec: document.getElementById('startBearingSec').value
+          },
+          segments,
+          description: document.getElementById('planDescription').value
+        };
+      }
+
+      function saveToLocalStorage() {
+        try {
+          const data = collectAllData();
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } catch (e) {
+          console.warn('Could not save to localStorage:', e);
+        }
+      }
+
+      function loadFromLocalStorage() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (!saved) return false;
+          const data = JSON.parse(saved);
+          return restoreData(data);
+        } catch (e) {
+          console.warn('Could not load from localStorage:', e);
+          return false;
+        }
+      }
+
+      function restoreData(data) {
+        if (!data || !data.segments) return false;
+
+        // Restore settings
+        if (data.settings) {
+          document.getElementById('bearingType').value = data.settings.bearingType || 'WholeCircle';
+          document.getElementById('inputUnit').value = data.settings.inputUnit || 'Metres';
+          document.getElementById('angleInputMode').value = data.settings.angleInputMode || 'Absolute';
+          document.getElementById('lengthType').value = data.settings.lengthType || 'chord';
+          document.getElementById('closureTolerance').value = data.settings.closureTolerance || '10000';
+          document.getElementById('forceClose').checked = data.settings.forceClose || false;
+        }
+
+        // Restore starting bearing
+        if (data.startingBearing) {
+          document.getElementById('startBearingDeg').value = data.startingBearing.deg || 0;
+          document.getElementById('startBearingMin').value = data.startingBearing.min || 0;
+          document.getElementById('startBearingSec').value = data.startingBearing.sec || 0;
+        }
+
+        // Restore description
+        if (data.description) {
+          document.getElementById('planDescription').value = data.description;
+        }
+
+        // Restore segments
+        updateHeaders();
+        clearSegmentsTable();
+        for (const seg of data.segments) {
+          addSegmentRow(seg.bearing, seg.length, seg.radius || '', seg.curve || '');
+        }
+
+        liveUpdateDiagram();
+        return true;
+      }
+
+      function exportToJson() {
+        const data = collectAllData();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const desc = document.getElementById('planDescription').value.trim();
+        const filename = desc ? desc.replace(/[^a-z0-9]/gi, '_').substring(0, 30) : 'survey_data';
+        a.download = `${filename}.json`;
+        a.click();
+      }
+
+      function importFromJson(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (restoreData(data)) {
+              saveToLocalStorage();
+              alert('Data imported successfully!');
+            } else {
+              alert('Invalid file format.');
+            }
+          } catch (err) {
+            alert('Error reading file: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
       }
 
       // ============================================
@@ -1035,11 +1200,34 @@
         return dmsFieldsToDecimal(inputs[0].value, inputs[1].value, inputs[2].value, bt === 'Deflection');
       }
 
-      function parseLengthFromRow(row) {
+      function parseLengthFromRow(row, radius = 0) {
         const container = row.children[2].querySelector('.field-group');
         const inputs = container.querySelectorAll('input');
         const u = container.dataset.inputUnit;
-        if (u === 'FeetInches') return parseLengthFields({ ft: inputs[0].value, in: inputs[1].value }, 'FeetInches');
+        let lengthM;
+        if (u === 'FeetInches') {
+          lengthM = parseLengthFields({ ft: inputs[0].value, in: inputs[1].value }, 'FeetInches');
+        } else {
+          const key = u === 'Metres' ? 'm' : u === 'DecimalFeet' ? 'ft' : 'lk';
+          lengthM = parseLengthFields({ [key]: inputs[0].value }, u);
+        }
+
+        // If arc length mode and radius is set, convert arc to chord
+        const lengthType = getLengthType();
+        if (lengthType === 'arc' && radius > 0) {
+          return arcLengthToChord(lengthM, radius);
+        }
+        return lengthM;
+      }
+
+      function getRawLengthFromRow(row) {
+        // Get raw length value without arc-to-chord conversion (for audit trail)
+        const container = row.children[2].querySelector('.field-group');
+        const inputs = container.querySelectorAll('input');
+        const u = container.dataset.inputUnit;
+        if (u === 'FeetInches') {
+          return parseLengthFields({ ft: inputs[0].value, in: inputs[1].value }, 'FeetInches');
+        }
         const key = u === 'Metres' ? 'm' : u === 'DecimalFeet' ? 'ft' : 'lk';
         return parseLengthFields({ [key]: inputs[0].value }, u);
       }
@@ -1087,10 +1275,10 @@
             }
           } catch { break; }
 
-          try { chord = parseLengthFromRow(row); } catch { break; }
-
           radius = parseFloat(getRadiusFromRow(row)) || 0;
           curveDir = getCurveFromRow(row);
+
+          try { chord = parseLengthFromRow(row, radius); } catch { break; }
 
           // Basic validation for live preview
           if (radius > 0 && chord > 2 * radius + TOLERANCE) break;
@@ -1110,7 +1298,10 @@
       }
 
       function triggerLiveUpdate() {
-        debounce(liveUpdateDiagram, 150);
+        debounce(() => {
+          liveUpdateDiagram();
+          saveToLocalStorage();
+        }, 150);
       }
 
       // ============================================
@@ -1206,8 +1397,10 @@
 
       function validateAndParseInputs() {
         const bt = getBearingType(), mode = getAngleInputMode();
+        const unit = getInputUnit();
+        const lengthType = getLengthType();
         const rows = segmentsTableBody.querySelectorAll('tr');
-        const errors = [], segments = [];
+        const errors = [], segments = [], rawInputs = [];
         let currentBearing = 0;
 
         // Clear errors
@@ -1240,8 +1433,11 @@
         }
 
         rows.forEach((row, i) => {
-          let bearing, chord, radius, curveDir;
+          let bearing, chord, radius, curveDir, rawBearing, rawLength;
           let valid = true;
+
+          // Capture raw bearing input for audit trail
+          rawBearing = getBearingFromRow(row);
 
           try {
             const raw = parseBearingFromRow(row);
@@ -1263,15 +1459,18 @@
             valid = false;
           }
 
-          try { chord = parseLengthFromRow(row); }
+          radius = parseFloat(getRadiusFromRow(row)) || 0;
+          curveDir = getCurveFromRow(row);
+
+          // Capture raw length for audit trail
+          try { rawLength = getRawLengthFromRow(row); } catch { rawLength = 0; }
+
+          try { chord = parseLengthFromRow(row, radius); }
           catch (e) {
             row.children[2].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
             errors.push(`Seg ${i + 1} length: ${e.message}`);
             valid = false;
           }
-
-          radius = parseFloat(getRadiusFromRow(row)) || 0;
-          curveDir = getCurveFromRow(row);
 
           // Curve validation
           if (radius > 0) {
@@ -1283,7 +1482,8 @@
             if (valid && chord > 2 * radius + TOLERANCE) {
               row.children[2].querySelectorAll('input').forEach(inp => inp.classList.add('error'));
               row.children[3].querySelector('input').classList.add('error');
-              errors.push(`Seg ${i + 1}: Chord (${chord.toFixed(2)}m) exceeds diameter (${(2 * radius).toFixed(2)}m).`);
+              const lenLabel = lengthType === 'arc' ? 'Arc' : 'Chord';
+              errors.push(`Seg ${i + 1}: ${lenLabel} too long for radius (chord ${chord.toFixed(2)}m > diameter ${(2 * radius).toFixed(2)}m).`);
               valid = false;
             }
           } else if (curveDir) {
@@ -1293,10 +1493,19 @@
 
           if (valid) {
             segments.push({ bearing, chord, radius, curveDir });
+            rawInputs.push({
+              bearingType: bt,
+              bearingInput: rawBearing,
+              lengthType,
+              lengthInput: rawLength,
+              lengthUnit: unit,
+              radius,
+              curveDir
+            });
           }
         });
 
-        return { valid: errors.length === 0 && segments.length === rows.length, segments, errors };
+        return { valid: errors.length === 0 && segments.length === rows.length, segments, rawInputs, errors };
       }
 
       function recalculate() {
@@ -1313,23 +1522,61 @@
         errDiv.innerHTML = '';
 
         const segments = result.segments;
-        const points = computeCoordinates(segments);
-        const area = computeAreaWithArcs(points, segments);
+        const rawInputs = result.rawInputs;
+        let points = computeCoordinates(segments);
         const perimeter = computePerimeterWithArcs(segments);
-        const misclosure = computeMisclosure(points);
+        let misclosure = computeMisclosure(points);
+
+        // Tolerance check
+        const toleranceLimit = parseInt(document.getElementById('closureTolerance').value);
+        const forceClose = document.getElementById('forceClose').checked;
+        let toleranceWarning = null;
+        let forceClosed = false;
+
+        if (misclosure && toleranceLimit > 0) {
+          const actualRatio = perimeter / misclosure.length_m;
+          if (actualRatio < toleranceLimit) {
+            toleranceWarning = {
+              expected: `1:${toleranceLimit.toLocaleString()}`,
+              actual: `1:${Math.round(actualRatio).toLocaleString()}`,
+              misclosure: misclosure.length_m
+            };
+          }
+        }
+
+        // Force close if enabled and within reasonable tolerance
+        if (forceClose && misclosure) {
+          // Only force close if misclosure is less than 1% of perimeter
+          if (misclosure.length_m < perimeter * 0.01) {
+            // Adjust final point to close the polygon
+            points[points.length - 1] = { x: points[0].x, y: points[0].y };
+            misclosure = null;
+            forceClosed = true;
+          }
+        }
+
+        const area = computeAreaWithArcs(points, segments);
 
         drawDiagram(points, segments, misclosure);
-        resDiv.innerHTML = generateReport(area, perimeter, misclosure, segments);
+        resDiv.innerHTML = generateReport(area, perimeter, misclosure, segments, rawInputs, toleranceWarning, forceClosed);
+        saveToLocalStorage();
       }
 
       // ============================================
       // REPORT
       // ============================================
 
-      function generateReport(area, perimeter, misclosure, segments) {
+      function formatRawBearing(raw, bearingType) {
+        if (bearingType === 'Grads') return `${raw.grads}g`;
+        if (bearingType === 'Quadrant') return `${raw.ns}${raw.deg}°${raw.min}'${raw.sec}"${raw.ew}`;
+        return `${raw.deg}°${raw.min}'${raw.sec}"`;
+      }
+
+      function generateReport(area, perimeter, misclosure, segments, rawInputs = [], toleranceWarning = null, forceClosed = false) {
         const now = new Date();
         const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         const unit = getInputUnit();
+        const lengthType = getLengthType();
         const planDesc = document.getElementById('planDescription').value.trim();
 
         const areaVals = convertAreaValues(area);
@@ -1341,8 +1588,21 @@
           closureStatus = 'Open';
           closureHtml = `<div class="warning-box no-break"><strong>⚠ Polygon Does Not Close</strong><br>Misclosure: ${misclosure.length_m.toFixed(4)} m at ${misclosure.bearing.toFixed(2)}°<br>Accuracy: ${accuracyRatio}</div>`;
         } else {
-          closureStatus = 'Closed';
-          closureHtml = `<div class="print-closed-status no-break"><strong>✓ Polygon is Closed</strong></div>`;
+          closureStatus = forceClosed ? 'Force Closed' : 'Closed';
+          closureHtml = forceClosed
+            ? `<div class="print-closed-status no-break" style="background:#fef9e7;border-color:#f39c12;color:#9a7b0a;"><strong>⚠ Polygon Force Closed</strong><br>Final point adjusted to close the traverse.</div>`
+            : `<div class="print-closed-status no-break"><strong>✓ Polygon is Closed</strong></div>`;
+        }
+
+        // Tolerance warning
+        let toleranceHtml = '';
+        if (toleranceWarning) {
+          toleranceHtml = `<div class="error-box no-break"><strong>⚠ Tolerance Exceeded</strong><br>
+            Expected: ${toleranceWarning.expected}<br>
+            Actual: ${toleranceWarning.actual}<br>
+            Misclosure: ${toleranceWarning.misclosure.toFixed(4)} m<br>
+            <em>This traverse does not meet the specified closure tolerance. Check input data or consider using a lower tolerance standard.</em>
+          </div>`;
         }
 
         const hasCurves = segments.some(s => s.radius > 0 && s.curveDir);
@@ -1384,6 +1644,41 @@
 
         const curveNote = hasCurves ? '<p style="font-size:0.85em;color:#7f8c8d;">* Length column shows chord length for curve segments. Arc length shown separately.</p>' : '';
 
+        // Audit trail - raw input values
+        let auditHtml = '';
+        if (rawInputs.length > 0) {
+          const bt = rawInputs[0].bearingType;
+          const lt = rawInputs[0].lengthType;
+          const lu = rawInputs[0].lengthUnit;
+
+          let auditRows = '';
+          for (let i = 0; i < rawInputs.length; i++) {
+            const raw = rawInputs[i];
+            const rawBearingStr = formatRawBearing(raw.bearingInput, raw.bearingType);
+            const rawLenVal = raw.lengthInput;
+            const unitLabel = lu === 'FeetInches' ? 'ft/in' : lu === 'DecimalFeet' ? 'ft' : lu === 'Links' ? 'lk' : 'm';
+            const lenLabel = lt === 'arc' && raw.radius > 0 ? 'arc' : 'chord';
+            auditRows += `<tr>
+              <td>${i + 1}</td>
+              <td>${rawBearingStr}</td>
+              <td>${rawLenVal.toFixed(3)} ${unitLabel} (${lenLabel})</td>
+              <td>${raw.radius > 0 ? raw.radius.toFixed(2) + ' m' : '-'}</td>
+              <td>${raw.curveDir || '-'}</td>
+            </tr>`;
+          }
+
+          const bearingLabel = bt === 'Grads' ? 'Grads' : bt === 'Quadrant' ? 'Quadrant' : bt === 'Internal' ? 'Internal' : bt === 'Deflection' ? 'Deflection' : 'D/M/S';
+
+          auditHtml = `
+            <h3>Input Audit Trail</h3>
+            <p style="font-size:0.85em;color:#7f8c8d;">Raw values as entered (Bearing: ${bearingLabel}, Length: ${lt === 'arc' ? 'Arc' : 'Chord'} in ${lu})</p>
+            <table class="no-break" style="font-size:0.9em;">
+              <thead><tr><th>Seg</th><th>Bearing Input</th><th>Length Input</th><th>Radius</th><th>Curve</th></tr></thead>
+              <tbody>${auditRows}</tbody>
+            </table>
+          `;
+        }
+
         return `
           <div class="print-report-header"><h1>Area Calculation Report</h1><h2>Survey Traverse Analysis</h2></div>
           <div class="print-meta">Generated: ${dateStr}</div>
@@ -1404,6 +1699,7 @@
             <div class="print-diagram-caption">Figure 1: Survey traverse${hasCurves ? ' (curves shown as arcs)' : ''}</div>
           </div>
           <h3>Closure Status</h3>
+          ${toleranceHtml}
           ${closureHtml}
           <div class="print-two-column no-break">
             <div class="print-column">
@@ -1421,6 +1717,7 @@
             <tbody>${tableRows}</tbody>
           </table>
           ${curveNote}
+          ${auditHtml}
           <div class="print-footer"><div class="print-footer-content"><span>Area Calculator</span><span>Tom Phillips © ${new Date().getFullYear()}</span></div></div>
         `;
       }
@@ -1465,16 +1762,46 @@
 
       document.getElementById('printPreviewBtn').addEventListener('click', () => window.print());
 
+      // Data persistence buttons
+      document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
+
+      document.getElementById('importJsonBtn').addEventListener('click', () => {
+        document.getElementById('importFileInput').click();
+      });
+
+      document.getElementById('importFileInput').addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          importFromJson(e.target.files[0]);
+          e.target.value = ''; // Reset for next import
+        }
+      });
+
+      document.getElementById('clearStorageBtn').addEventListener('click', () => {
+        if (confirm('Clear all saved data? This cannot be undone.')) {
+          localStorage.removeItem(STORAGE_KEY);
+          alert('Saved data cleared.');
+        }
+      });
+
+      // Length type change triggers live update
+      document.getElementById('lengthType').addEventListener('change', triggerLiveUpdate);
+
       // ============================================
       // INIT
       // ============================================
 
       window.onload = () => {
-        document.getElementById('bearingType').value = 'WholeCircle';
-        document.getElementById('inputUnit').value = 'Metres';
-        document.getElementById('angleInputMode').value = 'Absolute';
-        updateHeaders();
-        document.getElementById('setSegmentsBtn').click();
+        // Try to load from localStorage first
+        if (!loadFromLocalStorage()) {
+          // No saved data - set defaults
+          document.getElementById('bearingType').value = 'WholeCircle';
+          document.getElementById('inputUnit').value = 'Metres';
+          document.getElementById('angleInputMode').value = 'Absolute';
+          document.getElementById('lengthType').value = 'chord';
+          document.getElementById('closureTolerance').value = '10000';
+          updateHeaders();
+          document.getElementById('setSegmentsBtn').click();
+        }
       };
 
     })();
