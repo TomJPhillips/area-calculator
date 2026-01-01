@@ -821,6 +821,27 @@
       // ARC GEOMETRY FUNCTIONS
       // ============================================
 
+      // Debug mode: set to true to log curve geometry to console
+      const ARC_DEBUG = false;
+
+      /**
+       * Debug logging for arc/curve calculations
+       */
+      function debugArcGeometry(label, data) {
+        if (!ARC_DEBUG) return;
+        console.group(`🔵 Arc Debug: ${label}`);
+        for (const [key, val] of Object.entries(data)) {
+          if (typeof val === 'number') {
+            console.log(`  ${key}: ${val.toFixed(4)}`);
+          } else if (typeof val === 'object' && val !== null) {
+            console.log(`  ${key}:`, val);
+          } else {
+            console.log(`  ${key}: ${val}`);
+          }
+        }
+        console.groupEnd();
+      }
+
       /**
        * Central angle (radians) from chord and radius
        * theta = 2 * asin(c / (2R))
@@ -972,6 +993,124 @@
       // DIAGRAM DRAWING WITH ARCS
       // ============================================
 
+      /**
+       * Compute bounding box including arc extrema
+       * Returns { minX, maxX, minY, maxY } in world coordinates
+       */
+      function computeBoundsWithArcs(points, segments) {
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+
+        // Include all endpoints
+        for (const p of points) {
+          minX = Math.min(minX, p.x);
+          maxX = Math.max(maxX, p.x);
+          minY = Math.min(minY, p.y);
+          maxY = Math.max(maxY, p.y);
+        }
+
+        // Include arc extrema for curve segments
+        for (let i = 0; i < segments.length && i < points.length - 1; i++) {
+          const seg = segments[i];
+          if (seg.radius > 0 && seg.curveDir) {
+            const p0 = points[i], p1 = points[i + 1];
+            const extrema = computeArcExtrema(p0, p1, seg.radius, seg.curveDir);
+            for (const pt of extrema) {
+              minX = Math.min(minX, pt.x);
+              maxX = Math.max(maxX, pt.x);
+              minY = Math.min(minY, pt.y);
+              maxY = Math.max(maxY, pt.y);
+            }
+          }
+        }
+
+        return { minX, maxX, minY, maxY };
+      }
+
+      /**
+       * Compute arc extrema points (where arc reaches its max/min x or y)
+       * These occur at angles 0, 90, 180, 270 degrees if they fall within the arc sweep
+       */
+      function computeArcExtrema(p0, p1, radius, curveDir) {
+        const extrema = [];
+        const dx = p1.x - p0.x, dy = p1.y - p0.y;
+        const chordLen = Math.hypot(dx, dy);
+
+        if (chordLen < TOLERANCE || radius < chordLen / 2 - TOLERANCE) {
+          return extrema;
+        }
+
+        // Compute center (same logic as computeArcGeometry but in world coords)
+        const mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+        const halfChord = chordLen / 2;
+        const h = Math.sqrt(Math.max(0, radius * radius - halfChord * halfChord));
+
+        // In world coords: +x right, +y up (standard math coords)
+        // Right perpendicular (clockwise 90° in standard coords): (dy, -dx) / chordLen
+        const rightX = dy / chordLen, rightY = -dx / chordLen;
+
+        let cx, cy;
+        if (curveDir === 'R') {
+          // In world coords, we need to think about this carefully
+          // Travel direction from p0 to p1, "right" in world coords means...
+          // Actually, for consistency with canvas version, R = bulge in positive perpendicular direction
+          cx = mx - h * rightX;
+          cy = my - h * rightY;
+        } else {
+          cx = mx + h * rightX;
+          cy = my + h * rightY;
+        }
+
+        // Angles from center to endpoints
+        const startAngle = Math.atan2(p0.y - cy, p0.x - cx);
+        const endAngle = Math.atan2(p1.y - cy, p1.x - cx);
+
+        // Determine sweep direction (matching canvas logic)
+        // In world coords, counterclockwise is positive angle direction
+        // curveDir=R with center to left means we go clockwise in world coords
+        const goClockwise = (curveDir === 'R');
+
+        // Check each cardinal direction (0, π/2, π, -π/2) to see if it's within the sweep
+        const cardinals = [0, Math.PI / 2, Math.PI, -Math.PI / 2];
+        for (const angle of cardinals) {
+          if (isAngleInSweep(angle, startAngle, endAngle, goClockwise)) {
+            extrema.push({
+              x: cx + radius * Math.cos(angle),
+              y: cy + radius * Math.sin(angle)
+            });
+          }
+        }
+
+        return extrema;
+      }
+
+      /**
+       * Check if an angle is within the sweep from startAngle to endAngle
+       */
+      function isAngleInSweep(angle, startAngle, endAngle, clockwise) {
+        // Normalize all angles to [0, 2π)
+        const normalize = a => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const a = normalize(angle);
+        const s = normalize(startAngle);
+        const e = normalize(endAngle);
+
+        if (clockwise) {
+          // Clockwise: from s down to e
+          if (s >= e) {
+            return a <= s && a >= e;
+          } else {
+            return a <= s || a >= e;
+          }
+        } else {
+          // Counterclockwise: from s up to e
+          if (e >= s) {
+            return a >= s && a <= e;
+          } else {
+            return a >= s || a <= e;
+          }
+        }
+      }
+
       function drawDiagram(points, segments, misclosure, options = {}) {
         const { allowFill = true } = options;
         const canvas = document.getElementById('diagramCanvas');
@@ -1009,9 +1148,10 @@
           return;
         }
 
-        const xs = points.map(p => p.x), ys = points.map(p => p.y);
-        const minX = Math.min(...xs), maxX = Math.max(...xs);
-        const minY = Math.min(...ys), maxY = Math.max(...ys);
+        // Compute bounds including arc extrema
+        const bounds = computeBoundsWithArcs(points, segments);
+        const minX = bounds.minX, maxX = bounds.maxX;
+        const minY = bounds.minY, maxY = bounds.maxY;
 
         const padding = 60;
         const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
@@ -1025,12 +1165,29 @@
         const toCanvas = p => ({ x: p.x * scale + offsetX, y: -p.y * scale + offsetY });
         const cPoints = points.map(toCanvas);
 
-        // Fill polygon (using chord polygon for simplicity)
+        // Fill polygon following arcs
         if (allowFill && points.length >= 3 && !misclosure) {
           ctx.fillStyle = 'rgba(52, 152, 219, 0.1)';
           ctx.beginPath();
           ctx.moveTo(cPoints[0].x, cPoints[0].y);
-          for (let i = 1; i < cPoints.length; i++) ctx.lineTo(cPoints[i].x, cPoints[i].y);
+
+          for (let i = 0; i < segments.length && i < cPoints.length - 1; i++) {
+            const seg = segments[i];
+            const p0 = cPoints[i], p1 = cPoints[i + 1];
+
+            if (seg.radius > 0 && seg.curveDir) {
+              // Add arc to path
+              const geom = computeArcGeometry(p0, p1, seg.radius * scale, seg.curveDir);
+              if (geom) {
+                ctx.arc(geom.cx, geom.cy, seg.radius * scale, geom.startAngle, geom.endAngle, geom.anticlockwise);
+              } else {
+                ctx.lineTo(p1.x, p1.y);
+              }
+            } else {
+              ctx.lineTo(p1.x, p1.y);
+            }
+          }
+
           ctx.closePath();
           ctx.fill();
         }
@@ -1093,13 +1250,24 @@
           ctx.font = 'bold 12px Roboto';
           ctx.fillText((i + 1).toString(), midX + offsetX, midY + offsetY);
 
-          // Bearing and length (on other side)
+          // Bearing and length/curve info (on other side)
           ctx.fillStyle = '#555';
           ctx.font = '10px Roboto';
-          const bearingStr = seg.bearing.toFixed(1) + '°';
-          const lengthStr = seg.chord.toFixed(2) + 'm';
-          ctx.fillText(bearingStr, midX - offsetX, midY - offsetY - 6);
-          ctx.fillText(lengthStr, midX - offsetX, midY - offsetY + 6);
+
+          if (seg.radius > 0 && seg.curveDir) {
+            // Curve segment: show chord, radius, delta, and direction
+            const delta = arcCentralAngle(seg.chord, seg.radius) * 180 / Math.PI;
+            const arcLen = arcLength(seg.chord, seg.radius);
+            ctx.fillText(`R=${seg.radius.toFixed(1)}m ${seg.curveDir}`, midX - offsetX, midY - offsetY - 12);
+            ctx.fillText(`Δ=${delta.toFixed(1)}°`, midX - offsetX, midY - offsetY);
+            ctx.fillText(`Arc=${arcLen.toFixed(2)}m`, midX - offsetX, midY - offsetY + 12);
+          } else {
+            // Straight segment: show bearing and length
+            const bearingStr = seg.bearing.toFixed(1) + '°';
+            const lengthStr = seg.chord.toFixed(2) + 'm';
+            ctx.fillText(bearingStr, midX - offsetX, midY - offsetY - 6);
+            ctx.fillText(lengthStr, midX - offsetX, midY - offsetY + 6);
+          }
         }
 
         // North arrow
@@ -1125,19 +1293,16 @@
       }
 
       /**
-       * Draw an arc segment between two canvas points
+       * Compute arc center and geometry from two canvas points
+       * Returns { cx, cy, startAngle, endAngle, anticlockwise, delta } or null if invalid
        */
-      function drawArcSegment(ctx, p0, p1, scaledRadius, curveDir) {
+      function computeArcGeometry(p0, p1, scaledRadius, curveDir) {
         const dx = p1.x - p0.x, dy = p1.y - p0.y;
         const chordLen = Math.hypot(dx, dy);
 
         if (chordLen < TOLERANCE || scaledRadius < chordLen / 2 - TOLERANCE) {
-          // Fallback to line if geometry invalid
-          ctx.beginPath();
-          ctx.moveTo(p0.x, p0.y);
-          ctx.lineTo(p1.x, p1.y);
-          ctx.stroke();
-          return;
+          debugArcGeometry('Invalid geometry', { chordLen, scaledRadius, reason: 'chord too long or radius too small' });
+          return null; // Invalid geometry
         }
 
         // Midpoint
@@ -1147,33 +1312,69 @@
         const halfChord = chordLen / 2;
         const h = Math.sqrt(Math.max(0, scaledRadius * scaledRadius - halfChord * halfChord));
 
-        // Unit normal to chord (perpendicular)
-        const nx = -dy / chordLen, ny = dx / chordLen;
+        // Unit perpendicular to chord (right-hand side of travel direction in canvas coords)
+        // In canvas: +x right, +y down. Travel direction is (dx, dy).
+        // Right perpendicular (clockwise 90°): (dy, -dx) / chordLen
+        // Left perpendicular (counterclockwise 90°): (-dy, dx) / chordLen
+        const rightX = dy / chordLen, rightY = -dx / chordLen;
 
         // Choose center based on curve direction
-        // In canvas coords: +Y is down. L/R relative to travel direction.
-        // If curveDir = R, center is to the right of chord direction
-        // If curveDir = L, center is to the left
+        // curveDir = R means arc bulges RIGHT, so center is to the LEFT
+        // curveDir = L means arc bulges LEFT, so center is to the RIGHT
         let cx, cy;
         if (curveDir === 'R') {
-          cx = mx + h * nx;
-          cy = my + h * ny;
+          cx = mx - h * rightX;  // Center to LEFT (subtract right perpendicular)
+          cy = my - h * rightY;
         } else {
-          cx = mx - h * nx;
-          cy = my - h * ny;
+          cx = mx + h * rightX;  // Center to RIGHT (add right perpendicular)
+          cy = my + h * rightY;
         }
 
         // Compute angles from center to p0 and p1
         const startAngle = Math.atan2(p0.y - cy, p0.x - cx);
         const endAngle = Math.atan2(p1.y - cy, p1.x - cx);
 
-        // Determine if we should draw counterclockwise
-        // For R curves: draw counterclockwise (canvas coords)
-        // For L curves: draw clockwise
-        const anticlockwise = (curveDir === 'R');
+        // Determine sweep direction: we want the minor arc (shorter path)
+        // For curveDir=R (center to left), traveling from p0 to p1 along the arc
+        // that bulges right means going CLOCKWISE around the center
+        // For curveDir=L (center to right), we go COUNTERCLOCKWISE
+        const anticlockwise = (curveDir === 'L');
+
+        // Compute the delta angle (central angle) for reference
+        const delta = 2 * Math.asin(Math.min(halfChord / scaledRadius, 1));
+
+        debugArcGeometry('Arc computed', {
+          p0, p1,
+          center: { x: cx, y: cy },
+          radius: scaledRadius,
+          curveDir,
+          startAngleDeg: startAngle * 180 / Math.PI,
+          endAngleDeg: endAngle * 180 / Math.PI,
+          deltaDeg: delta * 180 / Math.PI,
+          anticlockwise,
+          chordLen
+        });
+
+        return { cx, cy, startAngle, endAngle, anticlockwise, delta, chordLen };
+      }
+
+      /**
+       * Draw an arc segment between two canvas points
+       */
+      function drawArcSegment(ctx, p0, p1, scaledRadius, curveDir) {
+        const geom = computeArcGeometry(p0, p1, scaledRadius, curveDir);
+
+        if (!geom) {
+          // Fallback to line if geometry invalid
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
+          ctx.stroke();
+          return;
+        }
 
         ctx.beginPath();
-        ctx.arc(cx, cy, scaledRadius, startAngle, endAngle, anticlockwise);
+        ctx.arc(geom.cx, geom.cy, scaledRadius, geom.startAngle, geom.endAngle, geom.anticlockwise);
         ctx.stroke();
       }
 
@@ -2234,6 +2435,9 @@ Exported from Area Calculator</description>
 
         const hasCurves = segments.some(s => s.radius > 0 && s.curveDir);
 
+        const showUnitColumn = unit !== 'Metres';
+        const unitLabel = unit === 'DecimalFeet' ? 'ft' : unit === 'FeetInches' ? 'ft/in' : unit === 'Links' ? 'lk' : 'm';
+
         let tableRows = '';
         for (let i = 0; i < segments.length; i++) {
           const seg = segments[i];
@@ -2257,12 +2461,13 @@ Exported from Area Calculator</description>
             <td>${seg.bearing.toFixed(2)}°</td>
             <td>${decimalToDMS(seg.bearing)}</td>
             <td>${seg.chord.toFixed(3)}</td>
-            <td>${displayLen}</td>
+            ${showUnitColumn ? `<td>${displayLen}</td>` : ''}
             ${curveInfo}
           </tr>`;
         }
 
         const curveHeaders = hasCurves ? '<th>Radius(m)</th><th>Curve</th><th>Arc Len(m)</th><th>Delta</th>' : '';
+        const lengthHeader = showUnitColumn ? `<th>Length(m)</th><th>Length(${unitLabel})</th>` : '<th>Length(m)</th>';
 
         const canvas = document.getElementById('diagramCanvas');
         const diagramImg = canvas.toDataURL('image/png');
@@ -2305,7 +2510,7 @@ Exported from Area Calculator</description>
           </div>
           <h3 class="traverse-schedule-heading">Traverse Schedule</h3>
           <table class="no-break">
-            <thead><tr><th>Seg</th><th>Bearing</th><th>DMS</th><th>Chord(m)</th><th>Chord(${unit})</th>${curveHeaders}</tr></thead>
+            <thead><tr><th>Seg</th><th>Bearing</th><th>DMS</th>${lengthHeader}${curveHeaders}</tr></thead>
             <tbody>${tableRows}</tbody>
           </table>
           ${curveNote}
