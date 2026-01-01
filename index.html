@@ -1610,25 +1610,19 @@ Exported from Area Calculator</description>
       }
 
       function getDefaultBearing(idx) {
-        const bt = getBearingType(), mode = getAngleInputMode();
-        if (bt === 'Internal') return { deg: 90, min: 0, sec: 0 };
-        if (bt === 'Deflection') return { deg: idx === 0 ? 0 : 90, min: 0, sec: 0 };
-        if (bt === 'Quadrant') {
-          const b = [{ ns: 'N', deg: 0, ew: 'E' }, { ns: 'N', deg: 90, ew: 'E' }, { ns: 'S', deg: 0, ew: 'E' }, { ns: 'N', deg: 90, ew: 'W' }];
-          return { ...b[idx % 4], min: 0, sec: 0 };
-        }
-        if (bt === 'Grads') return { grads: [0, 100, 200, 300][idx % 4] };
-        if (mode === 'Relative') return { deg: idx === 0 ? 0 : 90, min: 0, sec: 0 };
-        return { deg: [0, 90, 180, 270][idx % 4], min: 0, sec: 0 };
+        const bt = getBearingType();
+        if (bt === 'Quadrant') return { ns: 'N', deg: 0, min: 0, sec: 0, ew: 'E' };
+        if (bt === 'Grads') return { grads: 0 };
+        return { deg: 0, min: 0, sec: 0 };
       }
 
       function getDefaultLength() {
         const u = getInputUnit();
-        if (u === 'Metres') return { m: '10' };
-        if (u === 'DecimalFeet') return { ft: '32.81' };
-        if (u === 'FeetInches') return { ft: '32', in: '10' };
-        if (u === 'Links') return { lk: '49.71' };
-        return { m: '10' };
+        if (u === 'Metres') return { m: '0' };
+        if (u === 'DecimalFeet') return { ft: '0' };
+        if (u === 'FeetInches') return { ft: '0', in: '0' };
+        if (u === 'Links') return { lk: '0' };
+        return { m: '0' };
       }
 
       function addSegmentRow(bearingVals = null, lengthVals = null, radiusVal = '', curveVal = '') {
