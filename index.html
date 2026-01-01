@@ -2444,11 +2444,11 @@ Exported from Area Calculator</description>
       };
 
       function createDefaultPolygon() {
-        // Create a sample closed rectangle (10m x 15m)
+        // Create a sample closed square (10m x 10m)
         clearSegmentsTable();
-        addSegmentRow({ deg: 0, min: 0, sec: 0 }, { m: '15' }, '', '');    // North 15m
+        addSegmentRow({ deg: 0, min: 0, sec: 0 }, { m: '10' }, '', '');    // North 10m
         addSegmentRow({ deg: 90, min: 0, sec: 0 }, { m: '10' }, '', '');   // East 10m
-        addSegmentRow({ deg: 180, min: 0, sec: 0 }, { m: '15' }, '', '');  // South 15m
+        addSegmentRow({ deg: 180, min: 0, sec: 0 }, { m: '10' }, '', '');  // South 10m
         addSegmentRow({ deg: 270, min: 0, sec: 0 }, { m: '10' }, '', '');  // West 10m
         liveUpdateDiagram();
       }
